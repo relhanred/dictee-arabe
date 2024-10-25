@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "dev": "dictee-arabe-dev",
+    "prod": "dictee-arabe-prod",
+    "default": "dictee-arabe-prod"
+  }
+}
