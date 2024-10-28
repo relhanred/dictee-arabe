@@ -31,5 +31,4 @@ if (process.env.NODE_ENV === "development") {
   connectFunctionsEmulator(functions, "127.0.0.1", 5001)
   connectFirestoreEmulator(db, "127.0.0.1", 8080)
   connectStorageEmulator(storage, "127.0.0.1", 9199)
-
 }
