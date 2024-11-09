@@ -5,7 +5,7 @@ import { auth } from "@/app/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import Link from 'next/link';
 
-export default function Connexion() {
+export default function SignIn() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
