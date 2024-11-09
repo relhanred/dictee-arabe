@@ -18,8 +18,6 @@ export default function SignIn() {
 
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            // You can add additional logic here after successful sign in
-            console.log('User signed in:', userCredential.user);
         } catch (error) {
             setError(error.message);
         } finally {

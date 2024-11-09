@@ -1,18 +1,19 @@
 'use client'
 
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {ref, uploadBytes, getDownloadURL} from 'firebase/storage';
 import {collection, addDoc} from 'firebase/firestore';
 import {zodResolver} from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {storage, db} from "@/app/firebase";
 import {Controller, useForm} from "react-hook-form";
+import AudioRecorder from "@/app/components/AudioRecorder";
 
 const arabicLetters = ['ب', 'ت', 'د', 'ر', 'ك', 'س', 'ل', 'ج', 'م', 'ح', 'خ', 'ا', 'و', 'ي', 'ن', 'ه', 'ث', 'ق', 'ش', 'ف', 'ز', 'ط', 'ع', 'غ', 'ذ', 'ص', 'ض', 'ظ'];
 
 const baseSchema = {
     audioFile: z
-        .instanceof(File, { message: "Veuillez sélectionner un fichier valide."})
+        .instanceof(File, {message: "Veuillez sélectionner un fichier valide."})
         .refine((file) => file.size <= 10000000, 'La taille du fichier doit être inférieur à 10MB')
         .refine(
             (file) => ['audio/mp3', 'audio/ogg', 'audio/mpeg', 'audio/wav'].includes(file.type),
@@ -45,7 +46,7 @@ const formSchema = z.discriminatedUnion('type', [
         type: z.literal('Texte'),
         difficulty: z.enum(['Facile', 'Moyen', 'Difficile'], {
             errorMap: (issue, ctx) => {
-                return { message: 'Veuillez sélectionner un niveau de difficulté.' };
+                return {message: 'Veuillez sélectionner un niveau de difficulté.'};
             }
         }),
         selectedLetter: z.string().optional(),
@@ -55,13 +56,14 @@ const formSchema = z.discriminatedUnion('type', [
 const DictationForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [fileName, setFileName] = useState('');
+    const [resetKey, setResetKey] = useState(0); // Changed from boolean to number for forced re-render
 
     const {
         control,
         handleSubmit,
         watch,
         setValue,
-        reset,
+        reset: formReset,
         formState: {errors},
     } = useForm({
         resolver: zodResolver(formSchema),
@@ -69,12 +71,19 @@ const DictationForm = () => {
             audioFile: undefined,
             type: undefined,
             selectedLetter: '',
+            indexSelectedLetter: null,
             difficulty: '',
             content: '',
         },
     });
 
     const selectedType = watch('type');
+
+    const resetForm = useCallback(() => {
+        formReset();
+        setFileName('');
+        setResetKey(prev => prev + 1); // Increment the key to force AudioRecorder re-render
+    }, [formReset]);
 
     const onSubmit = async (data) => {
         setIsSubmitting(true);
@@ -97,10 +106,7 @@ const DictationForm = () => {
             };
 
             await addDoc(collection(db, 'dictations'), dictationData);
-
-            reset();
-            setFileName('');
-
+            resetForm();
             alert('Dictation added successfully!');
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -115,51 +121,39 @@ const DictationForm = () => {
             <div className="max-w-2xl mx-auto">
                 <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
                     <div className="text-center">
-                        <h2 className="text-2xl font-bold text-gray-900">Add New Dictation</h2>
-                        <p className="mt-2 text-sm text-gray-600">Upload audio files and manage dictation content</p>
+                        <h2 className="text-2xl font-bold text-gray-900">Ajouter nouvelle dictée</h2>
+                        <p className="mt-2 text-sm text-gray-600">Ajouter des fichiers audio et gérez vos dictées</p>
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Fichier audio
-                            </label>
-                            <Controller
-                                name="audioFile"
-                                control={control}
-                                render={({field: {onChange, value}}) => (
-                                    <div className="flex flex-col">
-                                        <div className="flex items-center justify-center w-full">
-                                            <label
-                                                className={`w-full flex flex-col items-center px-4 py-6 bg-white text-gray-700 rounded-lg border-2 border-dashed ${
-                                                    errors.audioFile ? 'border-red-500' : 'border-gray-300'
-                                                } cursor-pointer hover:bg-gray-50 transition-colors`}>
-                                                <span className="mt-2 text-sm text-gray-500">
-                                                    {fileName || 'Sélectionner un fichier audio (MP3, OGG, MPEG et WAV)'}
-                                                </span>
-                                                <input
-                                                    type="file"
-                                                    className="hidden"
-                                                    accept=".mp3,.ogg,.mpeg,.wav,audio/*"
-                                                    onChange={(e) => {
-                                                        const file = e.target.files?.[0];
-                                                        if (file) {
-                                                            onChange(file);
-                                                            setFileName(file.name);
-                                                        }
-                                                    }}
-                                                />
-                                            </label>
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Fichier audio
+                                </label>
+                                <Controller
+                                    name="audioFile"
+                                    control={control}
+                                    render={({field: {onChange}}) => (
+                                        <div className="flex flex-col">
+                                            <AudioRecorder
+                                                key={resetKey} // Add key prop here
+                                                onAudioChange={(file) => {
+                                                    onChange(file);
+                                                    setFileName(file ? file.name : '');
+                                                }}
+                                            />
+                                            {errors.audioFile && (
+                                                <p className="mt-1 text-sm text-red-600">
+                                                    {errors.audioFile.message}
+                                                </p>
+                                            )}
                                         </div>
-                                        {errors.audioFile && (
-                                            <p className="mt-1 text-sm text-red-600">
-                                                {errors.audioFile.message}
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
-                            />
+                                    )}
+                                />
+                            </div>
                         </div>
+
 
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">
@@ -193,13 +187,16 @@ const DictationForm = () => {
                                     Sélectionner une lettre
                                 </label>
                                 <div className="grid grid-cols-7 gap-2 text-xl font-bold" dir="rtl">
-                                    {arabicLetters.map((letter) => (
+                                    {arabicLetters.map((letter, key) => (
                                         <button
                                             key={letter}
                                             type="button"
-                                            onClick={() => setValue('selectedLetter', letter)}
+                                            onClick={() => {
+                                                setValue('selectedLetter', letter);
+                                                setValue('selectedIndexLetter', key)
+                                            }}
                                             className={`p-2 text-center rounded-md transition-colors ${
-                                                watch('selectedLetter') === letter
+                                                watch('selectedIndexLetter') >= key
                                                     ? 'bg-indigo-600 text-white'
                                                     : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                                             }`}
@@ -241,33 +238,31 @@ const DictationForm = () => {
                             </div>
                         )}
 
-                        {selectedType && (
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Dictée
-                                </label>
-                                <Controller
-                                    name="content"
-                                    control={control}
-                                    render={({field}) => (
-                                        <textarea
-                                            {...field}
-                                            rows={4}
-                                            lang="ar"
-                                            spellCheck="false"
-                                            dir="rtl"
-                                            className={`mt-1 block w-full py-2 px-3 border rounded-md text-xl shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                                                errors.content ? 'border-red-500' : 'border-gray-300'
-                                            }`}
-                                            placeholder="الإملاء..."
-                                        />
-                                    )}
-                                />
-                                {errors.content && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Dictée
+                            </label>
+                            <Controller
+                                name="content"
+                                control={control}
+                                render={({field}) => (
+                                    <textarea
+                                        {...field}
+                                        rows={4}
+                                        lang="ar"
+                                        spellCheck="false"
+                                        dir="rtl"
+                                        className={`mt-1 block w-full py-2 px-3 border rounded-md text-xl shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                                            errors.content ? 'border-red-500' : 'border-gray-300'
+                                        }`}
+                                        placeholder="الإملاء..."
+                                    />
                                 )}
-                            </div>
-                        )}
+                            />
+                            {errors.content && (
+                                <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>
+                            )}
+                        </div>
 
                         <button
                             type="submit"
