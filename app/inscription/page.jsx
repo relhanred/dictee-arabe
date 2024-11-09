@@ -5,7 +5,7 @@ import { auth } from "@/app/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import Link from 'next/link';
 
-export default function SignUp() {
+export default function Inscription() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -89,7 +89,7 @@ export default function SignUp() {
                 <div className="text-center">
                     <p className="text-sm text-gray-600">
                         Already have an account?{' '}
-                        <Link href="/signin" className="font-medium text-indigo-600 hover:text-indigo-500">
+                        <Link href="/connexion" className="font-medium text-indigo-600 hover:text-indigo-500">
                             Sign in
                         </Link>
                     </p>
