@@ -171,7 +171,7 @@ const DictationForm = () => {
                                     <select
                                         {...field}
                                         defaultValue=""
-                                        className={`mt-1 block w-full py-2 px-3 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                                        className={`mt-1 block w-full py-2 px-3 border rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black ${
                                             errors.type ? 'border-red-500' : 'border-gray-300'
                                         }`}
                                     >
@@ -202,7 +202,7 @@ const DictationForm = () => {
                                             }}
                                             className={`p-2 text-center rounded-md transition-colors ${
                                                 watch('selectedIndexLetter') >= key
-                                                    ? 'bg-indigo-600 text-white'
+                                                    ? 'bg-gray-900 text-white'
                                                     : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                                             }`}
                                         >
@@ -229,7 +229,7 @@ const DictationForm = () => {
                                             onClick={() => setValue('difficulty', level)}
                                             className={`py-2 px-4 rounded-md transition-colors ${
                                                 watch('difficulty') === level
-                                                    ? 'bg-indigo-600 text-white'
+                                                    ? 'bg-gray-900 text-white'
                                                     : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                                             }`}
                                         >
@@ -257,7 +257,7 @@ const DictationForm = () => {
                                         lang="ar"
                                         spellCheck="false"
                                         dir="rtl"
-                                        className={`mt-1 block w-full py-2 px-3 border rounded-md text-xl shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                                        className={`mt-1 block w-full py-2 px-3 border rounded-md text-xl shadow-sm focus:outline-none focus:ring-black focus:border-black ${
                                             errors.content ? 'border-red-500' : 'border-gray-300'
                                         }`}
                                         placeholder="الإملاء..."
@@ -272,7 +272,7 @@ const DictationForm = () => {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full flex justify-center py-3 px-4 uppercase border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
+                            className="w-full flex justify-center py-3 px-4 uppercase border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
                         >
                             {isSubmitting ? (
                                 <span className="flex items-center">
