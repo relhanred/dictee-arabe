@@ -145,7 +145,6 @@ const AudioRecorder = ({onAudioChange, reset: shouldReset}) => {
     };
 
     const deleteAudio = () => {
-        console.log("delete audio")
         setAudioFile(null);
         setFileName('');
         onAudioChange(null);

@@ -5,7 +5,7 @@ import {ref, uploadBytes, getDownloadURL} from 'firebase/storage';
 import {collection, addDoc} from 'firebase/firestore';
 import {zodResolver} from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import {storage, db} from "@/app/firebase";
+import {storage, db, auth} from "@/app/firebase";
 import {Controller, useForm} from "react-hook-form";
 import AudioRecorder from "@/app/components/AudioRecorder";
 
@@ -89,6 +89,11 @@ const DictationForm = () => {
         setIsSubmitting(true);
 
         try {
+
+            if (!auth.currentUser) {
+                throw new Error('User not authenticated');
+            }
+            console.log('Current user:', auth.currentUser.uid);
             const audioRef = ref(storage, `dictations/${Date.now()}_${data.audioFile.name}`);
             const uploadResult = await uploadBytes(audioRef, data.audioFile);
             const audioUrl = await getDownloadURL(uploadResult.ref);
