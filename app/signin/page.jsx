@@ -4,12 +4,18 @@ import { useState } from 'react';
 import { auth } from "@/app/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import Link from 'next/link';
+import {useRouter, useSearchParams} from "next/navigation";
+import { DEFAULT_LOGIN_REDIRECT } from '@/middleware';
 
 export default function SignIn() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get('callbackUrl');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -18,6 +24,13 @@ export default function SignIn() {
 
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            // Get the user token and set it as a cookie
+            const token = await userCredential.user.getIdToken();
+            document.cookie = `session=${token}; path=/;`;
+
+            // Redirect to the callback URL or default redirect
+            router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
+            router.refresh(); // Refresh to ensure the new auth state is recognized
         } catch (error) {
             setError(error.message);
         } finally {
@@ -30,7 +43,7 @@ export default function SignIn() {
             <div className="max-w-md w-full space-y-8">
                 <div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Sign in to your account
+                        Connexion
                     </h2>
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
