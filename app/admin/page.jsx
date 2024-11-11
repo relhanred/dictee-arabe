@@ -93,7 +93,6 @@ const DictationForm = () => {
             if (!auth.currentUser) {
                 throw new Error('User not authenticated');
             }
-            console.log('Current user:', auth.currentUser.uid);
             const audioRef = ref(storage, `dictations/${Date.now()}_${data.audioFile.name}`);
             const uploadResult = await uploadBytes(audioRef, data.audioFile);
             const audioUrl = await getDownloadURL(uploadResult.ref);
@@ -122,160 +121,159 @@ const DictationForm = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl mx-auto">
-                <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
-                    <div className="text-center">
-                        <h2 className="text-2xl font-bold text-gray-900">Ajouter nouvelle dictée</h2>
-                        <p className="mt-2 text-sm text-gray-600">Ajouter des fichiers audio et gérez vos dictées</p>
+        <div className="max-w-2xl mx-auto border rounded-lg bg-white shadow-lg">
+            <div className="p-6 space-y-6">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold text-gray-900">Ajouter nouvelle dictée</h2>
+                    <p className="mt-2 text-sm text-gray-600">Ajouter des fichiers audio et gérez vos dictées</p>
+                </div>
+
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <div className="space-y-2">
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Fichier audio
+                            </label>
+                            <Controller
+                                name="audioFile"
+                                control={control}
+                                render={({field: {onChange}}) => (
+                                    <div className="flex flex-col">
+                                        <AudioRecorder
+                                            key={resetKey} // Add key prop here
+                                            onAudioChange={(file) => {
+                                                onChange(file);
+                                                setFileName(file ? file.name : '');
+                                            }}
+                                        />
+                                        {errors.audioFile && (
+                                            <p className="mt-1 text-sm text-red-600">
+                                                {errors.audioFile.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                            />
+                        </div>
                     </div>
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                        <div className="space-y-2">
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Fichier audio
-                                </label>
-                                <Controller
-                                    name="audioFile"
-                                    control={control}
-                                    render={({field: {onChange}}) => (
-                                        <div className="flex flex-col">
-                                            <AudioRecorder
-                                                key={resetKey} // Add key prop here
-                                                onAudioChange={(file) => {
-                                                    onChange(file);
-                                                    setFileName(file ? file.name : '');
-                                                }}
-                                            />
-                                            {errors.audioFile && (
-                                                <p className="mt-1 text-sm text-red-600">
-                                                    {errors.audioFile.message}
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
-                                />
-                            </div>
-                        </div>
 
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                            Type
+                        </label>
+                        <Controller
+                            name="type"
+                            control={control}
+                            render={({field}) => (
+                                <select
+                                    {...field}
+                                    defaultValue=""
+                                    className={`mt-1 block w-full py-2 px-3 border rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black ${
+                                        errors.type ? 'border-red-500' : 'border-gray-300'
+                                    }`}
+                                >
+                                    <option value="" disabled>Sélectionner un type</option>
+                                    <option value="Lettre">Lettre</option>
+                                    <option value="Texte">Texte</option>
+                                </select>
+                            )}
+                        />
+                        {errors.type && (
+                            <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>
+                        )}
+                    </div>
 
+                    {selectedType === 'Lettre' && (
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">
-                                Type
+                                Sélectionner une lettre
                             </label>
-                            <Controller
-                                name="type"
-                                control={control}
-                                render={({field}) => (
-                                    <select
-                                        {...field}
-                                        defaultValue=""
-                                        className={`mt-1 block w-full py-2 px-3 border rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black ${
-                                            errors.type ? 'border-red-500' : 'border-gray-300'
+                            <div className="grid grid-cols-7 gap-2 text-xl font-bold" dir="rtl">
+                                {arabicLetters.map((letter, key) => (
+                                    <button
+                                        key={letter}
+                                        type="button"
+                                        onClick={() => {
+                                            setValue('selectedLetter', letter);
+                                            setValue('selectedIndexLetter', key)
+                                        }}
+                                        className={`p-2 text-center rounded-md transition-colors ${
+                                            watch('selectedIndexLetter') >= key
+                                                ? 'bg-gray-900 text-white'
+                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                                         }`}
                                     >
-                                        <option value="" disabled>Sélectionner un type</option>
-                                        <option value="Lettre">Lettre</option>
-                                        <option value="Texte">Texte</option>
-                                    </select>
-                                )}
-                            />
-                            {errors.type && (
-                                <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>
+                                        {letter}
+                                    </button>
+                                ))}
+                            </div>
+                            {errors.selectedLetter && (
+                                <p className="mt-1 text-sm text-red-600">{errors.selectedLetter.message}</p>
                             )}
                         </div>
+                    )}
 
-                        {selectedType === 'Lettre' && (
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Sélectionner une lettre
-                                </label>
-                                <div className="grid grid-cols-7 gap-2 text-xl font-bold" dir="rtl">
-                                    {arabicLetters.map((letter, key) => (
-                                        <button
-                                            key={letter}
-                                            type="button"
-                                            onClick={() => {
-                                                setValue('selectedLetter', letter);
-                                                setValue('selectedIndexLetter', key)
-                                            }}
-                                            className={`p-2 text-center rounded-md transition-colors ${
-                                                watch('selectedIndexLetter') >= key
-                                                    ? 'bg-gray-900 text-white'
-                                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                            }`}
-                                        >
-                                            {letter}
-                                        </button>
-                                    ))}
-                                </div>
-                                {errors.selectedLetter && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.selectedLetter.message}</p>
-                                )}
-                            </div>
-                        )}
-
-                        {selectedType === 'Texte' && (
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Difficulté
-                                </label>
-                                <div className="grid grid-cols-3 gap-4">
-                                    {['Facile', 'Moyen', 'Difficile'].map((level) => (
-                                        <button
-                                            key={level}
-                                            type="button"
-                                            onClick={() => setValue('difficulty', level)}
-                                            className={`py-2 px-4 rounded-md transition-colors ${
-                                                watch('difficulty') === level
-                                                    ? 'bg-gray-900 text-white'
-                                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                            }`}
-                                        >
-                                            {level}
-                                        </button>
-                                    ))}
-                                </div>
-                                {errors.difficulty && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.difficulty.message}</p>
-                                )}
-                            </div>
-                        )}
-
+                    {selectedType === 'Texte' && (
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">
-                                Dictée
+                                Difficulté
                             </label>
-                            <Controller
-                                name="content"
-                                control={control}
-                                render={({field}) => (
-                                    <textarea
-                                        {...field}
-                                        rows={4}
-                                        lang="ar"
-                                        spellCheck="false"
-                                        dir="rtl"
-                                        className={`mt-1 block w-full py-2 px-3 border rounded-md text-xl shadow-sm focus:outline-none focus:ring-black focus:border-black ${
-                                            errors.content ? 'border-red-500' : 'border-gray-300'
+                            <div className="grid grid-cols-3 gap-4">
+                                {['Facile', 'Moyen', 'Difficile'].map((level) => (
+                                    <button
+                                        key={level}
+                                        type="button"
+                                        onClick={() => setValue('difficulty', level)}
+                                        className={`py-2 px-4 rounded-md transition-colors ${
+                                            watch('difficulty') === level
+                                                ? 'bg-gray-900 text-white'
+                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                                         }`}
-                                        placeholder="الإملاء..."
-                                    />
-                                )}
-                            />
-                            {errors.content && (
-                                <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>
+                                    >
+                                        {level}
+                                    </button>
+                                ))}
+                            </div>
+                            {errors.difficulty && (
+                                <p className="mt-1 text-sm text-red-600">{errors.difficulty.message}</p>
                             )}
                         </div>
+                    )}
 
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full flex justify-center py-3 px-4 uppercase border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
-                        >
-                            {isSubmitting ? (
-                                <span className="flex items-center">
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                            Dictée
+                        </label>
+                        <Controller
+                            name="content"
+                            control={control}
+                            render={({field}) => (
+                                <textarea
+                                    {...field}
+                                    rows={4}
+                                    lang="ar"
+                                    spellCheck="false"
+                                    dir="rtl"
+                                    className={`mt-1 block w-full py-2 px-3 border rounded-md text-xl shadow-sm focus:outline-none focus:ring-black focus:border-black ${
+                                        errors.content ? 'border-red-500' : 'border-gray-300'
+                                    }`}
+                                    placeholder="الإملاء..."
+                                />
+                            )}
+                        />
+                        {errors.content && (
+                            <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>
+                        )}
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full flex justify-center py-3 px-4 uppercase border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
+                    >
+                        {isSubmitting ? (
+                            <span className="flex items-center">
                                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                                          xmlns="http://www.w3.org/2000/svg"
                                          fill="none" viewBox="0 0 24 24">
@@ -286,14 +284,13 @@ const DictationForm = () => {
                                     </svg>
                                     Chargement...
                                 </span>
-                            ) : (
-                                <span className="flex items-center">
+                        ) : (
+                            <span className="flex items-center">
                                     Ajouter
                                 </span>
-                            )}
-                        </button>
-                    </form>
-                </div>
+                        )}
+                    </button>
+                </form>
             </div>
         </div>
     );
