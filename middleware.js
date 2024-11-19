@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 export const publicRoutes = ['/', '/signin', '/signup']
 export const authRoutes = ['/admin']
-export const DEFAULT_LOGIN_REDIRECT = '/'
+export const DEFAULT_LOGIN_REDIRECT = '/admin'
 
 export function middleware(request) {
     const { pathname, search, origin } = request.nextUrl
