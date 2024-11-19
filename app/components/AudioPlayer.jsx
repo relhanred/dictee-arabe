@@ -16,7 +16,7 @@ const AudioPlayer = ({audio}) => {
                 container: waveformRef.current,
                 waveColor: '#ced1d0',
                 progressColor: '#858b8c',
-                height: 56,
+                height: 24,
                 barWidth: 2,
                 barGap: 3,
                 barRadius: 2,
@@ -65,22 +65,22 @@ const AudioPlayer = ({audio}) => {
     return (
         <div className="flex flex-col items-center justify-center w-full">
             <div className="relative w-full">
-                <div className="w-full bg-white pl-16 pr-10 py-6 rounded-xl border">
+                <div className="w-full bg-white pl-8 pr-4 py-6 rounded-xl border">
                     <div ref={waveformRef} className="w-full"></div>
                 </div>
 
                 <button
                     type="button"
                     onClick={handlePlayPause}
-                    className="inline-flex w-fit h-fit hover:text-indigo-700 text-indigo-600 top-7 absolute"
+                    className="inline-flex w-fit h-fit hover:text-indigo-700 text-indigo-600 top-5 absolute"
                 >
                     {isPlaying ? (
-                        <PauseIcon className="size-12 text-[#9a8f8d]"/>
+                        <PauseIcon className="size-8 text-[#9a8f8d]"/>
                     ) : (
-                        <PlayIcon className="size-12 text-[#9a8f8d]"/>
+                        <PlayIcon className="size-8 text-[#9a8f8d]"/>
                     )}
                 </button>
-                <span className="absolute text-[#858b8c] text-sm bottom-1 left-[68px]">
+                <span className="absolute text-[#858b8c] text-sm bottom-1 left-7">
                     {formatTime(currentTime)} / {formatTime(duration)}
                 </span>
             </div>
