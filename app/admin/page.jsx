@@ -49,10 +49,10 @@ export default function AdminPage() {
     return (
         <div className="container mx-auto p-4 max-w-7xl">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Dictations</h1>
+                <h1 className="text-2xl font-bold">Dictées</h1>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+                    className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors duration-200 flex items-center gap-2"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -66,7 +66,7 @@ export default function AdminPage() {
                             clipRule="evenodd"
                         />
                     </svg>
-                    Add Dictation
+                    Ajouter dictée
                 </button>
             </div>
 

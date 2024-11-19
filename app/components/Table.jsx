@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import AudioPlayer from "@/app/components/AudioPlayer";
 
-const Table = ({ dictations = [] }) => {
+const Table = ({dictations = []}) => {
     const [sortConfig, setSortConfig] = useState({
         key: 'createdAt',
         direction: 'desc'
@@ -13,42 +13,42 @@ const Table = ({ dictations = [] }) => {
     });
 
     // Sorting function
-/*    const sortData = (data) => {
-        return [...data].sort((a, b) => {
-            if (sortConfig.key === 'createdAt') {
-                const dateA = new Date(a[sortConfig.key]);
-                const dateB = new Date(b[sortConfig.key]);
-                return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
-            }
+    /*    const sortData = (data) => {
+            return [...data].sort((a, b) => {
+                if (sortConfig.key === 'createdAt') {
+                    const dateA = new Date(a[sortConfig.key]);
+                    const dateB = new Date(b[sortConfig.key]);
+                    return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+                }
 
-            if (a[sortConfig.key] < b[sortConfig.key]) {
-                return sortConfig.direction === 'asc' ? -1 : 1;
-            }
-            if (a[sortConfig.key] > b[sortConfig.key]) {
-                return sortConfig.direction === 'asc' ? 1 : -1;
-            }
-            return 0;
-        });
-    };*/
+                if (a[sortConfig.key] < b[sortConfig.key]) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (a[sortConfig.key] > b[sortConfig.key]) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        };*/
 
     // Filtering function
-/*    const filterData = (data) => {
-        return data.filter(item => {
-            return (
-                item.content.toLowerCase().includes(filters.content.toLowerCase()) &&
-                item.letter.toLowerCase().includes(filters.letter.toLowerCase()) &&
-                item.type.toLowerCase().includes(filters.type.toLowerCase())
-            );
-        });
-    };*/
+    /*    const filterData = (data) => {
+            return data.filter(item => {
+                return (
+                    item.content.toLowerCase().includes(filters.content.toLowerCase()) &&
+                    item.letter.toLowerCase().includes(filters.letter.toLowerCase()) &&
+                    item.type.toLowerCase().includes(filters.type.toLowerCase())
+                );
+            });
+        };*/
 
     // Handle sort
-/*    const handleSort = (key) => {
-        setSortConfig({
-            key,
-            direction: sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc',
-        });
-    };*/
+    /*    const handleSort = (key) => {
+            setSortConfig({
+                key,
+                direction: sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc',
+            });
+        };*/
 
     // Format date
     const formatDate = (timestamp) => {
@@ -62,15 +62,15 @@ const Table = ({ dictations = [] }) => {
     };
 
 
-/*
-    const filteredAndSortedData = sortData(filterData(dictations));
-*/
+    /*
+        const filteredAndSortedData = sortData(filterData(dictations));
+    */
 
     return (
         <div className="w-full p-4">
-            <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
+            <div className="overflow-x-auto relative shadow-md sm:rounded-lg border">
                 <table className="w-full text-sm text-left text-gray-500">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                    <thead className="text-xs text-gray-700 bg-gray-50 border-b">
                     <tr>
                         <th scope="col" className="px-6 py-3">
                             <button
@@ -115,11 +115,11 @@ const Table = ({ dictations = [] }) => {
                             <td className="px-6 py-4 min-w-96 font-medium text-gray-900">
                                 {row.content}
                             </td>
-                            <td className="px-6 py-4 w-10">{row.letter}</td>
+                            <td className="px-6 py-4 w-10 text-2xl">{row.letter}</td>
                             <td className="px-6 py-4 w-72">
                                 <AudioPlayer audio={row.audioUrl}/>
                             </td>
-                            <td className="px-6 py-4 w-40">{formatDate(row.createdAt)}</td>
+                            <td className="px-6 py-4 w-44">{formatDate(row.createdAt)}</td>
 
                         </tr>
                     ))}
