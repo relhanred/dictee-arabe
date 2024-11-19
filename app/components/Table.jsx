@@ -1,5 +1,12 @@
 import React, {useState} from 'react';
 import AudioPlayer from "@/app/components/AudioPlayer";
+import { db } from "@/app/firebase";
+import { deleteDoc, doc } from 'firebase/firestore';
+import { storage } from "@/app/firebase";
+import { ref, deleteObject } from "firebase/storage";
+import { useFlash } from '@/app/contexts/FlashContext';
+import Modal from '@/app/components/Modal';
+import {TrashIcon} from "@/app/components/icons/TrashIcon";
 
 const Table = ({dictations = []}) => {
     const [sortConfig, setSortConfig] = useState({
@@ -49,6 +56,25 @@ const Table = ({dictations = []}) => {
                 direction: sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc',
             });
         };*/
+
+    const [deletingDictation, setDeletingDictation] = useState(null);
+    const { showFlash } = useFlash();
+
+    const handleDelete = async () => {
+        if (!deletingDictation) return;
+
+        try {
+            await deleteDoc(doc(db, "dictations", deletingDictation.id));
+            const audioRef = ref(storage, deletingDictation.audioUrl);
+            await deleteObject(audioRef);
+            showFlash('Dictée supprimée avec succès', 'success');
+        } catch (error) {
+            console.error('Error deleting dictation:', error);
+            showFlash('Erreur lors de la suppression', 'error');
+        } finally {
+            setDeletingDictation(null);
+        }
+    };
 
     // Format date
     const formatDate = (timestamp) => {
@@ -120,12 +146,47 @@ const Table = ({dictations = []}) => {
                                 <AudioPlayer audio={row.audioUrl}/>
                             </td>
                             <td className="px-6 py-4 w-44">{formatDate(row.createdAt)}</td>
-
+                            <td className="px-6 py-4 w-20">
+                                <button
+                                    onClick={() => setDeletingDictation(row)}
+                                    className="text-red-600 hover:text-red-800"
+                                >
+                                    <TrashIcon className="size-6" />
+                                </button>
+                            </td>
                         </tr>
                     ))}
                     </tbody>
                 </table>
             </div>
+
+            <Modal
+                isOpen={!!deletingDictation}
+                onClose={() => setDeletingDictation(null)}
+                title="Confirmation de suppression"
+                size="sm"
+            >
+                <div className="space-y-4">
+                    <p className="text-gray-600">
+                        Cette action est irréversible. La dictée sera supprimée définitivement.
+                    </p>
+                    <div className="flex justify-end space-x-3">
+                        <button
+                            onClick={() => setDeletingDictation(null)}
+                            className="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                        >
+                            Annuler
+                        </button>
+                        <button
+                            onClick={handleDelete}
+                            className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
+                        >
+                            Supprimer
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
         </div>
     );
 };
