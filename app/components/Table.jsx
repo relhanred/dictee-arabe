@@ -93,7 +93,7 @@ const Table = ({dictations = []}) => {
     */
 
     return (
-        <div className="w-full p-4">
+        <div className="w-full">
             <div className="overflow-x-auto relative shadow-md sm:rounded-lg border">
                 <table className="w-full text-sm text-left text-gray-500">
                     <thead className="text-xs text-gray-700 bg-gray-50 border-b">
@@ -128,6 +128,9 @@ const Table = ({dictations = []}) => {
                             >
                                 Date de création
                             </button>
+                        </th>
+                        <th scope="col" className="px-6 py-3">
+                            Actions
                         </th>
                     </tr>
                     </thead>
