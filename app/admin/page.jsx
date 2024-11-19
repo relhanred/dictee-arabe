@@ -1,10 +1,11 @@
 'use client';
 import { useEffect, useState } from "react";
 import { db } from "@/app/firebase";
-import { collection, query, orderBy, getDocsn , onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import DictationForm from "@/app/components/DictationForm";
 import Table from "@/app/components/Table";
-import {useFlash} from "@/app/contexts/FlashContext";
+import Modal from '@/app/components/Modal';
+import { useFlash } from '@/app/contexts/FlashContext';
 
 export default function AdminPage() {
     const [dictations, setDictations] = useState([]);
@@ -26,7 +27,7 @@ export default function AdminPage() {
             setLoading(false);
         }, (error) => {
             console.error('Error fetching dictations:', error);
-            showFlash('Erreur lor', 'error');
+            showFlash('Erreur lors de l\'ajout de la dictée.', 'error');
             setLoading(false);
         });
 
@@ -35,7 +36,7 @@ export default function AdminPage() {
 
     const handleFormSuccess = () => {
         setIsModalOpen(false);
-        showFlash('Dictée ajoutée !');
+        showFlash('Dictée ajoutée avec succès !', 'success');
     };
 
     if (loading) {
@@ -72,49 +73,14 @@ export default function AdminPage() {
 
             <Table dictations={dictations} />
 
-            {isModalOpen && (
-                <>
-                    <div
-                        className="fixed inset-0 bg-black bg-opacity-50 z-40"
-                        onClick={() => setIsModalOpen(false)}
-                    />
-
-                    <div className="fixed inset-0 z-50 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4">
-                            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-2xl p-6">
-                                <button
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-500 transition-colors duration-200"
-                                >
-                                    <svg
-                                        className="h-6 w-6"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M6 18L18 6M6 6l12 12"
-                                        />
-                                    </svg>
-                                </button>
-
-                                <div className="mb-4">
-                                    <h2 className="text-xl font-semibold text-gray-900">
-                                        Ajouter une nouvelle dictée
-                                    </h2>
-                                </div>
-
-                                <div className="mt-4">
-                                    <DictationForm onSuccess={handleFormSuccess} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </>
-            )}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Ajouter une nouvelle dictée"
+                size="md"
+            >
+                <DictationForm onSuccess={handleFormSuccess} />
+            </Modal>
         </div>
     );
 }
