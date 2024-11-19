@@ -11,6 +11,7 @@ export default function AdminPage() {
     const [dictations, setDictations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingDictation, setEditingDictation] = useState(null);
     const { showFlash } = useFlash();
 
     useEffect(() => {
@@ -27,7 +28,7 @@ export default function AdminPage() {
             setLoading(false);
         }, (error) => {
             console.error('Error fetching dictations:', error);
-            showFlash('Erreur lors de l\'ajout de la dictée.', 'error');
+            showFlash('Erreur lors de la récupération des dictées.', 'error');
             setLoading(false);
         });
 
@@ -36,7 +37,12 @@ export default function AdminPage() {
 
     const handleFormSuccess = () => {
         setIsModalOpen(false);
-        showFlash('Dictée ajoutée avec succès !', 'success');
+        setEditingDictation(null);
+    };
+
+    const handleEdit = (dictation) => {
+        setEditingDictation(dictation);
+        setIsModalOpen(true);
     };
 
     if (loading) {
@@ -48,7 +54,7 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="container mx-auto p-4 max-w-7xl">
+        <div className="container mx-auto p-4 max-w-screen-xl">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Dictées</h1>
                 <button
@@ -71,16 +77,26 @@ export default function AdminPage() {
                 </button>
             </div>
 
-            <Table dictations={dictations} />
+            <Table
+                dictations={dictations}
+                onEdit={handleEdit}
+            />
 
             <Modal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                title="Ajouter une nouvelle dictée"
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setEditingDictation(null);
+                }}
+                title={editingDictation ? "Modifier la dictée" : "Ajouter une nouvelle dictée"}
                 size="md"
             >
-                <DictationForm onSuccess={handleFormSuccess} />
+                <DictationForm
+                    onSuccess={handleFormSuccess}
+                    initialData={editingDictation}
+                />
             </Modal>
+
         </div>
     );
 }

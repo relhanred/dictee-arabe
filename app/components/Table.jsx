@@ -7,8 +7,9 @@ import { ref, deleteObject } from "firebase/storage";
 import { useFlash } from '@/app/contexts/FlashContext';
 import Modal from '@/app/components/Modal';
 import {TrashIcon} from "@/app/components/icons/TrashIcon";
+import {PenIcon} from "@/app/components/icons/PenIcon";
 
-const Table = ({dictations = []}) => {
+const Table = ({dictations = [], onEdit}) => {
     const [sortConfig, setSortConfig] = useState({
         key: 'createdAt',
         direction: 'desc'
@@ -145,16 +146,25 @@ const Table = ({dictations = []}) => {
                                 {row.content}
                             </td>
                             <td className="px-6 py-4 w-10 text-2xl">{row.letter}</td>
-                            <td className="px-6 py-4 w-72">
-                                <AudioPlayer audio={row.audioUrl}/>
+                            <td className="px-6 py-4 min-w-56">
+                                <AudioPlayer
+                                    key={`${row.id}-${row.audioUrl}`}
+                                    audio={row.audioUrl}
+                                />
                             </td>
                             <td className="px-6 py-4 w-44">{formatDate(row.createdAt)}</td>
                             <td className="px-6 py-4 w-20">
                                 <button
+                                    onClick={() => onEdit(row)}
+                                    className="text-blue-600 hover:text-blue-800"
+                                >
+                                    <PenIcon className="size-6"/>
+                                </button>
+                                <button
                                     onClick={() => setDeletingDictation(row)}
                                     className="text-red-600 hover:text-red-800"
                                 >
-                                    <TrashIcon className="size-6" />
+                                    <TrashIcon className="size-6"/>
                                 </button>
                             </td>
                         </tr>
