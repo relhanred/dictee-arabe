@@ -1,11 +1,10 @@
 'use client'
 
-import { useState } from 'react';
-import { auth } from "@/app/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import Link from 'next/link';
+import {useState} from 'react';
+import {auth} from "@/app/firebase";
+import {signInWithEmailAndPassword} from "firebase/auth";
 import {useRouter, useSearchParams} from "next/navigation";
-import { DEFAULT_LOGIN_REDIRECT } from '@/middleware';
+import {DEFAULT_LOGIN_REDIRECT} from '@/middleware';
 
 export default function SignIn() {
     const [email, setEmail] = useState('');
@@ -21,16 +20,12 @@ export default function SignIn() {
         e.preventDefault();
         setError('');
         setLoading(true);
-
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            // Get the user token and set it as a cookie
             const token = await userCredential.user.getIdToken();
             document.cookie = `session=${token}; path=/;`;
-
-            // Redirect to the callback URL or default redirect
             router.push(callbackUrl || DEFAULT_LOGIN_REDIRECT);
-            router.refresh(); // Refresh to ensure the new auth state is recognized
+            router.refresh();
         } catch (error) {
             setError(error.message);
         } finally {
@@ -39,20 +34,18 @@ export default function SignIn() {
     };
 
     return (
-        <div className="h-full flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Connexion
-                    </h2>
-                </div>
+        <div className="h-full flex justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full">
+                <h2 className="text-center text-3xl font-extrabold text-gray-900">
+                    Connexion
+                </h2>
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     {error && (
                         <div className="rounded-md bg-red-50 p-4">
                             <div className="text-sm text-red-700">{error}</div>
                         </div>
                     )}
-                    <div className="rounded-md shadow-sm -space-y-px">
+                    <div className="rounded-md shadow-sm space-y-4">
                         <div>
                             <label htmlFor="email-address" className="sr-only">
                                 Email address
@@ -63,8 +56,8 @@ export default function SignIn() {
                                 type="email"
                                 autoComplete="email"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Email address"
+                                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none rounded focus:ring-gray-500 focus:border-gray-500 focus:z-10 sm:text-sm"
+                                placeholder="Adresse e-mail"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
@@ -79,52 +72,25 @@ export default function SignIn() {
                                 type="password"
                                 autoComplete="current-password"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Password"
+                                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none rounded focus:ring-gray-500 focus:border-gray-500 focus:z-10 sm:text-sm"
+                                placeholder="Mot de passe"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <input
-                                id="remember-me"
-                                name="remember-me"
-                                type="checkbox"
-                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                                Remember me
-                            </label>
-                        </div>
-
-                        <div className="text-sm">
-                            <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
-                                Forgot your password?
-                            </a>
-                        </div>
-                    </div>
 
                     <div>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
                         >
                             {loading ? 'Connexion en cours' : 'Se connecter'}
                         </button>
                     </div>
                 </form>
-                <div className="text-center">
-                    <p className="text-sm text-gray-600">
-                        Don&#39;t have an account?{' '}
-                        <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
-                            Sign up
-                        </Link>
-                    </p>
-                </div>
             </div>
         </div>
     );
