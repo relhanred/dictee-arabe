@@ -1,5 +1,3 @@
-import React from "react";
-
 export function PlayIcon({className}) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24">
