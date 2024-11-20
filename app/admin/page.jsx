@@ -55,7 +55,7 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="container mx-auto p-4 max-w-screen-xl">
+        <div className="container mx-auto p-4 ">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-black">Dictées</h1>
                 <button
