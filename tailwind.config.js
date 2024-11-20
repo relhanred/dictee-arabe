@@ -19,7 +19,11 @@ module.exports = {
       },
       animation: {
         'fade-in': 'fade-in 0.3s ease-out'
-      }
+      },
+      fontFamily: {
+        noto: ['var(--font-noto)'],
+        montserrat: ['var(--font-montserrat)'],
+      },
     },
   },
   plugins: [],

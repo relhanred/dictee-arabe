@@ -1,13 +1,15 @@
 import React, {useState} from 'react';
 import AudioPlayer from "@/app/components/AudioPlayer";
-import { db } from "@/app/firebase";
-import { deleteDoc, doc } from 'firebase/firestore';
-import { storage } from "@/app/firebase";
-import { ref, deleteObject } from "firebase/storage";
-import { useFlash } from '@/app/contexts/FlashContext';
+import {db} from "@/app/firebase";
+import {deleteDoc, doc} from 'firebase/firestore';
+import {storage} from "@/app/firebase";
+import {ref, deleteObject} from "firebase/storage";
+import {useFlash} from '@/app/contexts/FlashContext';
 import Modal from '@/app/components/Modal';
 import {TrashIcon} from "@/app/components/icons/TrashIcon";
 import {PenIcon} from "@/app/components/icons/PenIcon";
+import {ChevronUpIcon} from "@/app/components/icons/ChevronUpIcon";
+import {ChevronDownIcon} from "@/app/components/icons/ChevronDownIcon";
 
 const Table = ({dictations = [], onEdit}) => {
     const [sortConfig, setSortConfig] = useState({
@@ -58,8 +60,56 @@ const Table = ({dictations = [], onEdit}) => {
             });
         };*/
 
+
+    const CollapsibleContent = ({ content }) => {
+        const [isExpanded, setIsExpanded] = useState(false);
+        const [isOverflowing, setIsOverflowing] = useState(false);
+        const contentRef = React.useRef(null);
+
+        React.useEffect(() => {
+            if (contentRef.current) {
+                const element = contentRef.current;
+                const lineHeight = parseInt(window.getComputedStyle(element).lineHeight);
+                const height = element.scrollHeight;
+                const lines = height / lineHeight;
+                setIsOverflowing(lines > 3);
+            }
+        }, [content]);
+
+        return (
+            <div>
+                <div
+                    ref={contentRef}
+                    className={`text-gray-900 text-xl leading-7 rtl transition-all duration-200
+                    ${isExpanded ? '' : 'line-clamp-3'}`}
+                >
+                    {content}
+                </div>
+
+                {isOverflowing && (
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="mt-2 text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 transition-colors duration-200"
+                    >
+                        {isExpanded ? (
+                            <>
+                                <span>Voir moins</span>
+                                <ChevronUpIcon className="size-5" />
+                            </>
+                        ) : (
+                            <>
+                                <span>Voir plus</span>
+                                <ChevronDownIcon className="size-5" />
+                            </>
+                        )}
+                    </button>
+                )}
+            </div>
+        );
+    };
+
     const [deletingDictation, setDeletingDictation] = useState(null);
-    const { showFlash } = useFlash();
+    const {showFlash} = useFlash();
 
     const handleDelete = async () => {
         if (!deletingDictation) return;
@@ -77,7 +127,6 @@ const Table = ({dictations = [], onEdit}) => {
         }
     };
 
-    // Format date
     const formatDate = (timestamp) => {
         return new Date(timestamp).toLocaleDateString('fr-FR', {
             year: 'numeric',
@@ -139,20 +188,20 @@ const Table = ({dictations = [], onEdit}) => {
                     {dictations.map((row, index) => (
                         <tr
                             key={index}
-                            className="bg-white border-b hover:bg-gray-50"
+                            className="bg-white border-b hover:bg-gray-50 text-black"
                         >
                             <td className="px-6 py-4 w-20">{row.type}</td>
-                            <td className="px-6 py-4 min-w-96 font-medium text-gray-900">
-                                {row.content}
+                            <td className="px-6 py-4 min-w-96 text-2xl text-black font-noto">
+                                <CollapsibleContent content={row.content} />
                             </td>
-                            <td className="px-6 py-4 w-10 text-2xl">{row.letter}</td>
-                            <td className="px-6 py-4 min-w-56">
+                            <td className="px-6 py-4 w-10 text-2xl text-black font-noto">{row.letter}</td>
+                            <td className="px-6 py-4 min-w-72">
                                 <AudioPlayer
                                     key={`${row.id}-${row.audioUrl}`}
                                     audio={row.audioUrl}
                                 />
                             </td>
-                            <td className="px-6 py-4 w-44">{formatDate(row.createdAt)}</td>
+                            <td className="px-6 py-4 w-48">{formatDate(row.createdAt)}</td>
                             <td className="px-6 py-4 w-20">
                                 <button
                                     onClick={() => onEdit(row)}

@@ -6,6 +6,7 @@ import DictationForm from "@/app/components/DictationForm";
 import Table from "@/app/components/Table";
 import Modal from '@/app/components/Modal';
 import { useFlash } from '@/app/contexts/FlashContext';
+import {FeatherIcon} from "@/app/components/icons/FeatherIcon";
 
 export default function AdminPage() {
     const [dictations, setDictations] = useState([]);
@@ -59,21 +60,10 @@ export default function AdminPage() {
                 <h1 className="text-2xl font-bold text-black">Dictées</h1>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors duration-200 flex items-center gap-2"
+                    className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 inline-flex items-center gap-x-4"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                    >
-                        <path
-                            fillRule="evenodd"
-                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                            clipRule="evenodd"
-                        />
-                    </svg>
-                    Ajouter dictée
+                    <FeatherIcon className="size-7"/>
+                    <span className="">Ajouter</span>
                 </button>
             </div>
 
