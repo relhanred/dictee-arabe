@@ -61,7 +61,7 @@ const Table = ({dictations = [], onEdit}) => {
         };*/
 
 
-    const CollapsibleContent = ({ content }) => {
+    const CollapsibleContent = ({content}) => {
         const [isExpanded, setIsExpanded] = useState(false);
         const [isOverflowing, setIsOverflowing] = useState(false);
         const contentRef = React.useRef(null);
@@ -94,12 +94,12 @@ const Table = ({dictations = [], onEdit}) => {
                         {isExpanded ? (
                             <>
                                 <span>Voir moins</span>
-                                <ChevronUpIcon className="size-5" />
+                                <ChevronUpIcon className="size-5"/>
                             </>
                         ) : (
                             <>
                                 <span>Voir plus</span>
-                                <ChevronDownIcon className="size-5" />
+                                <ChevronDownIcon className="size-5"/>
                             </>
                         )}
                     </button>
@@ -172,13 +172,13 @@ const Table = ({dictations = [], onEdit}) => {
                         <th scope="col" className="px-6 py-3">
                             Audio
                         </th>
-                        <th scope="col" className="px-6 py-3">
+                        {/*                        <th scope="col" className="px-6 py-3">
                             <button
                                 className="flex items-center justify-between w-full"
                             >
                                 Date de création
                             </button>
-                        </th>
+                        </th>*/}
                         <th scope="col" className="px-6 py-3">
                             Actions
                         </th>
@@ -192,7 +192,7 @@ const Table = ({dictations = [], onEdit}) => {
                         >
                             <td className="px-6 py-4 w-20">{row.type}</td>
                             <td className="px-6 py-4 min-w-96 text-2xl text-black font-noto">
-                                <CollapsibleContent content={row.content} />
+                                <CollapsibleContent content={row.content}/>
                             </td>
                             <td className="px-6 py-4 w-10 text-2xl text-black font-noto">{row.letter}</td>
                             <td className="px-6 py-4 min-w-80">
@@ -201,20 +201,24 @@ const Table = ({dictations = [], onEdit}) => {
                                     audio={row.audioUrl}
                                 />
                             </td>
+                            {/*
                             <td className="px-6 py-4 w-48">{formatDate(row.createdAt)}</td>
+*/}
                             <td className="px-6 py-4 w-20">
-                                <button
-                                    onClick={() => onEdit(row)}
-                                    className="text-blue-600 hover:text-blue-800"
-                                >
-                                    <PenIcon className="size-6"/>
-                                </button>
-                                <button
-                                    onClick={() => setDeletingDictation(row)}
-                                    className="text-red-600 hover:text-red-800"
-                                >
-                                    <TrashIcon className="size-6"/>
-                                </button>
+                                <div className="flex items-center justify-center space-x-2">
+                                    <button
+                                        onClick={() => onEdit(row)}
+                                        className="text-gray-700 hover:text-gray-900"
+                                    >
+                                        <PenIcon className="size-6"/>
+                                    </button>
+                                    <button
+                                        onClick={() => setDeletingDictation(row)}
+                                        className="text-red-600 hover:text-red-800"
+                                    >
+                                        <TrashIcon className="size-6"/>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     ))}
