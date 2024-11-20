@@ -195,7 +195,7 @@ const Table = ({dictations = [], onEdit}) => {
                                 <CollapsibleContent content={row.content} />
                             </td>
                             <td className="px-6 py-4 w-10 text-2xl text-black font-noto">{row.letter}</td>
-                            <td className="px-6 py-4 min-w-72">
+                            <td className="px-6 py-4 min-w-80">
                                 <AudioPlayer
                                     key={`${row.id}-${row.audioUrl}`}
                                     audio={row.audioUrl}

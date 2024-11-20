@@ -16,10 +16,12 @@ const AudioPlayer = ({audio}) => {
                 container: waveformRef.current,
                 waveColor: '#ced1d0',
                 progressColor: '#858b8c',
-                height: 24,
-                barWidth: 2,
-                barGap: 3,
-                barRadius: 2,
+                height: 40,
+                barWidth: 3,
+                barGap: 2.25,
+                barRadius: 3,
+                normalize: true,
+                cursorWidth: 0,
                 url: audio
             });
 
@@ -65,14 +67,14 @@ const AudioPlayer = ({audio}) => {
     return (
         <div className="flex flex-col items-center justify-center w-full">
             <div className="relative w-full">
-                <div className="w-full bg-white pl-8 pr-4 py-6 rounded-xl border">
+                <div className="w-full bg-white pl-8 pr-3 pt-3 pb-6 rounded-xl border">
                     <div ref={waveformRef} className="w-full"></div>
                 </div>
 
                 <button
                     type="button"
                     onClick={handlePlayPause}
-                    className="inline-flex w-fit h-fit hover:text-indigo-700 text-indigo-600 top-5 absolute"
+                    className="inline-flex w-fit h-fit hover:text-indigo-700 text-indigo-600 top-4 left-0 absolute"
                 >
                     {isPlaying ? (
                         <PauseIcon className="size-8 text-[#9a8f8d]"/>
