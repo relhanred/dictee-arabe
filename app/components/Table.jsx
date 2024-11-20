@@ -71,7 +71,7 @@ const Table = ({dictations = [], onEdit}) => {
                 const element = contentRef.current;
                 const lineHeight = parseInt(window.getComputedStyle(element).lineHeight);
                 const height = element.scrollHeight;
-                const lines = height / lineHeight;
+                const lines = Math.round(height / lineHeight);
                 setIsOverflowing(lines > 3);
             }
         }, [content]);
