@@ -41,10 +41,10 @@ const AudioRecorder = ({onAudioChange, reset: shouldReset}) => {
                 container: waveformRef.current,
                 waveColor: '#ced1d0',
                 progressColor: '#858b8c',
-                height: 56,
-                barWidth: 2,
-                barGap: 3,
-                barRadius: 2,
+                height: 72,
+                barWidth: 3,
+                barGap: 2.25,
+                barRadius: 3,
                 scrollParent: true,
                 minPxPerSec: 1,
                 autoCenter: true,
@@ -234,7 +234,7 @@ const AudioRecorder = ({onAudioChange, reset: shouldReset}) => {
                         <button
                             type="button"
                             onClick={playPause}
-                            className="inline-flex w-fit h-fit hover:text-indigo-700 text-indigo-600 top-7 absolute"
+                            className="inline-flex w-fit h-fit hover:text-indigo-700 text-indigo-600 top-9 absolute"
                         >
                             {isPlaying ? (
                                 <PauseIcon className="size-12 text-[#9a8f8d]"/>
