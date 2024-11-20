@@ -239,9 +239,9 @@ const DictationForm = ({onSuccess,initialData = null }) => {
                                 <select
                                     {...field}
                                     disabled={!!initialData}
-                                    className={`mt-1 block w-full py-2 px-3 text-black border bg-white rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black ${
+                                    className={`mt-1 block w-full py-2 px-3 text-black border rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black ${
                                         errors.type ? 'border-red-500' : 'border-gray-300'
-                                    } ${initialData ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                    } ${initialData ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'}`}
                                 >
                                     <option value="" disabled>Sélectionner un type</option>
                                     <option value="Lettre">Lettre</option>
