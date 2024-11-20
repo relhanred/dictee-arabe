@@ -236,7 +236,7 @@ const DictationForm = ({onSuccess,initialData = null }) => {
                                 <select
                                     {...field}
                                     disabled={!!initialData}
-                                    className={`mt-1 block w-full py-2 px-3 border rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black ${
+                                    className={`mt-1 block w-full py-2 px-3 text-black border rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black ${
                                         errors.type ? 'border-red-500' : 'border-gray-300'
                                     } ${initialData ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                                 >
@@ -322,7 +322,7 @@ const DictationForm = ({onSuccess,initialData = null }) => {
                                     lang="ar"
                                     spellCheck="false"
                                     dir="rtl"
-                                    className={`mt-1 block w-full py-2 px-3 text-gray-800 border rounded-md text-xl shadow-sm focus:outline-none focus:ring-black focus:border-black ${
+                                    className={`mt-1 block w-full py-2 px-3 text-black border rounded-md text-xl shadow-sm focus:outline-none focus:ring-black focus:border-black ${
                                         errors.content ? 'border-red-500' : 'border-gray-300'
                                     }`}
                                     placeholder="الإملاء..."

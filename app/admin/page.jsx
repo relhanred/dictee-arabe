@@ -56,7 +56,7 @@ export default function AdminPage() {
     return (
         <div className="container mx-auto p-4 max-w-screen-xl">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Dictées</h1>
+                <h1 className="text-2xl font-bold text-black">Dictées</h1>
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors duration-200 flex items-center gap-2"
