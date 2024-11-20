@@ -256,7 +256,7 @@ const DictationForm = ({onSuccess,initialData = null }) => {
                             <label className="block text-sm font-medium text-gray-700">
                                 Sélectionner une lettre
                             </label>
-                            <div className="grid grid-cols-7 gap-2 text-xl font-bold" dir="rtl">
+                            <div className="grid lg:grid-cols-7 grid-cols-4 gap-2 text-xl font-semibold font-noto" dir="rtl">
                                 {arabicLetters.map((letter, key) => (
                                     <button
                                         key={letter}
@@ -265,10 +265,10 @@ const DictationForm = ({onSuccess,initialData = null }) => {
                                             setValue('selectedLetter', letter);
                                             setValue('selectedIndexLetter', key)
                                         }}
-                                        className={`p-2 text-center rounded-md transition-colors ${
+                                        className={`p-2 text-center rounded-md ${
                                             watch('selectedIndexLetter') >= key
-                                                ? 'bg-gray-900 text-white'
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                                ? 'bg-gray-900 font-bold text-white'
+                                                : 'bg-gray-50 hover:bg-gray-100 border text-black'
                                         }`}
                                     >
                                         {letter}
