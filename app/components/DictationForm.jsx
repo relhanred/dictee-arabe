@@ -31,6 +31,7 @@ const getFormSchema = (hasExistingAudio) => {
         audioFile: getAudioFileSchema(hasExistingAudio),
         type: z.enum(['Lettre', 'Texte'], {
             required_error: 'Veuillez sélectionner un type',
+            invalid_type_error: 'Veuillez sélectionner un type'
         }),
         content: z
             .string({
@@ -59,7 +60,9 @@ const getFormSchema = (hasExistingAudio) => {
             }),
             selectedLetter: z.string().optional(),
         })
-    ]);
+    ], {
+        errorMap: () => ({ message: 'Veuillez sélectionner un type' })
+    });
 };
 
 const DictationForm = ({onSuccess,initialData = null }) => {
