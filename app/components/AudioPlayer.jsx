@@ -3,7 +3,7 @@ import WaveSurfer from 'wavesurfer.js';
 import {PlayIcon} from '@/app/components/icons/PlayIcon';
 import {PauseIcon} from '@/app/components/icons/PauseIcon';
 
-const AudioPlayer = ({audio}) => {
+const AudioPlayer = ({audio, options = false}) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -11,6 +11,7 @@ const AudioPlayer = ({audio}) => {
     const [playbackRate, setPlaybackRate] = useState(1);
     const waveformRef = useRef(null);
     const wavesurferRef = useRef(null);
+    const recorderRef = useRef(null);
     const loopingRef = useRef(false); // Ref pour accéder à la valeur actuelle dans les callbacks
 
     // Mettre à jour la ref quand l'état change
@@ -131,48 +132,50 @@ const AudioPlayer = ({audio}) => {
                 </span>
             </div>
 
-            {/* Options de contrôle - Version responsive */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full mt-3 px-2 space-y-3 sm:space-y-0">
-                <div className="flex items-center">
-                    <button
-                        type="button"
-                        onClick={toggleLoop}
-                        className={`px-3 py-1.5 text-sm rounded-md transition ${
-                            isLooping
-                                ? 'bg-gray-900 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                    >
-                        <div className="flex items-center space-x-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M17 2l4 4-4 4"></path>
-                                <path d="M3 11v-1a4 4 0 0 1 4-4h14"></path>
-                                <path d="M7 22l-4-4 4-4"></path>
-                                <path d="M21 13v1a4 4 0 0 1-4 4H3"></path>
-                            </svg>
-                            <span>Répéter</span>
-                        </div>
-                    </button>
-                </div>
+            {/* Options de contrôle - Affichées uniquement si options=true */}
+            {options && (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full mt-3 px-2 space-y-3 sm:space-y-0">
+                    <div className="flex items-center">
+                        <button
+                            type="button"
+                            onClick={toggleLoop}
+                            className={`px-3 py-1.5 text-sm rounded-md transition ${
+                                isLooping
+                                    ? 'bg-gray-900 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                        >
+                            <div className="flex items-center space-x-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M17 2l4 4-4 4"></path>
+                                    <path d="M3 11v-1a4 4 0 0 1 4-4h14"></path>
+                                    <path d="M7 22l-4-4 4-4"></path>
+                                    <path d="M21 13v1a4 4 0 0 1-4 4H3"></path>
+                                </svg>
+                                <span>Répéter</span>
+                            </div>
+                        </button>
+                    </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex flex-wrap gap-2">
-                        {[0.5, 0.75, 1, 1.25, 1.5].map(rate => (
-                            <button
-                                key={rate}
-                                onClick={() => handlePlaybackRateChange(rate)}
-                                className={`w-9 h-8 text-xs font-medium rounded transition ${
-                                    playbackRate === rate
-                                        ? 'bg-gray-900 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }`}
-                            >
-                                {rate === 1 ? 'x1' : rate > 1 ? `x${rate}` : `x${rate}`}
-                            </button>
-                        ))}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap gap-2">
+                            {[0.5, 0.75, 1, 1.25, 1.5].map(rate => (
+                                <button
+                                    key={rate}
+                                    onClick={() => handlePlaybackRateChange(rate)}
+                                    className={`w-9 h-8 text-xs font-medium rounded transition ${
+                                        playbackRate === rate
+                                            ? 'bg-gray-900 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {rate === 1 ? 'x1' : rate > 1 ? `x${rate}` : `x${rate}`}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

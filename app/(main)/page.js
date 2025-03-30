@@ -274,7 +274,7 @@ export default function Home() {
                         <div className="max-w-3xl mx-auto">
                             <div className="bg-white sm:p-6 p-2 rounded-xl border border-gray-200 shadow-sm mb-6">
                                 {dictation.audioUrl ? (
-                                    <AudioPlayer audio={dictation.audioUrl} />
+                                    <AudioPlayer audio={dictation.audioUrl} options={true} />
                                 ) : (
                                     <p className="text-yellow-600 text-center">Aucun audio disponible pour cette dictée</p>
                                 )}
