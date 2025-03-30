@@ -47,7 +47,7 @@ export default function LettersPage() {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [showFlash]);
 
     const handleFormSuccess = () => {
         setIsModalOpen(false);
@@ -62,7 +62,7 @@ export default function LettersPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <div className="text-lg">Chargement...</div>
+                <div className="text-lg">Chargement en cours...</div>
             </div>
         );
     }
@@ -82,7 +82,7 @@ export default function LettersPage() {
 
             {dictations.length === 0 ? (
                 <div className="text-center py-10 bg-white rounded-lg shadow">
-                    <p className="text-gray-600">Aucune dictée de type "Lettre" trouvée</p>
+                    <p className="text-gray-600">Aucune dictée de type &quot;Lettre&quot; trouvée</p>
                 </div>
             ) : (
                 <Table

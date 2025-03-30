@@ -42,7 +42,7 @@ export default function AdminPage() {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [showFlash]);
 
     const handleFormSuccess = () => {
         setIsModalOpen(false);
@@ -57,7 +57,7 @@ export default function AdminPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <div className="text-lg">Chargement...</div>
+                <div className="text-lg">Chargement en cours...</div>
             </div>
         );
     }

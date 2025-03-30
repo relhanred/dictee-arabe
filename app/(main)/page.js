@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/app/firebase';
 import AudioPlayer from '@/app/components/AudioPlayer';
@@ -50,7 +50,7 @@ export default function Home() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const fetchDictation = async () => {
+    const fetchDictation = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -103,14 +103,14 @@ export default function Home() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [step, selectedDifficulty, selectedLetterIndex]);
 
     useEffect(() => {
         if ((step === 'full-alphabet' && selectedDifficulty) ||
             (step === 'partial-alphabet' && selectedLetterIndex !== null)) {
             fetchDictation();
         }
-    }, [step, selectedDifficulty, selectedLetterIndex]);
+    }, [step, selectedDifficulty, selectedLetterIndex, fetchDictation]);
 
     const handleReset = () => {
         setStep('initial');
@@ -161,7 +161,7 @@ export default function Home() {
                             onClick={() => setStep('full-alphabet')}
                             className="p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow"
                         >
-                            <h2 className="text-xl font-semibold mb-2">Je connais l'alphabet arabe</h2>
+                            <h2 className="text-xl font-semibold mb-2">Je connais l&apos;alphabet arabe</h2>
                             <p className="text-gray-600">Choisissez votre niveau de difficulté</p>
                         </button>
                         <button
@@ -169,7 +169,7 @@ export default function Home() {
                             className="p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow"
                         >
                             <h2 className="text-xl font-semibold mb-2">Je suis en apprentissage</h2>
-                            <p className="text-gray-600">Sélectionnez jusqu'où vous en êtes dans l'alphabet</p>
+                            <p className="text-gray-600">Sélectionnez jusqu&apos;où vous en êtes dans l&apos;alphabet</p>
                         </button>
                     </div>
                 </div>
