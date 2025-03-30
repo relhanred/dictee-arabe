@@ -105,7 +105,7 @@ export default function Home() {
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la dictée:', error);
-            setError('Erreur lors de la récupération de la dictée: ' + error.message);
+            setError('Impossible de récupérer la dictée. Veuillez réessayer plus tard.');
         } finally {
             setLoading(false);
         }
