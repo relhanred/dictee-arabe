@@ -53,10 +53,9 @@ export default function Home() {
     const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
     const [dictationKey, setDictationKey] = useState(0);
 
-    // Référence pour stocker les IDs des dictées récemment affichées
+    // Keep track of recently shown dictations to avoid repetition
     const recentDictationsRef = useRef([]);
-    // Nombre maximal de dictées à conserver dans l'historique récent
-    const maxRecentDictations = useRef(5);
+    const maxRecentDictations = 10; // Adjust based on your total dictation count
 
     const fetchDictation = useCallback(async (autoPlayAfterFetch = false) => {
         setLoading(true);
@@ -94,7 +93,6 @@ export default function Home() {
             if (querySnapshot.empty) {
                 setError('Aucune dictée trouvée pour ce critère');
                 setDictation(null);
-                setLoading(false);
                 return;
             }
 
@@ -108,27 +106,39 @@ export default function Home() {
             });
 
             if (dictations.length > 0) {
-                // Filtrer les dictées pour exclure celles récemment vues
-                let availableDictations = dictations.filter(d => !recentDictationsRef.current.includes(d.id));
+                // Filter out recently shown dictations if possible
+                let availableDictations = dictations.filter(
+                    dict => !recentDictationsRef.current.includes(dict.id)
+                );
 
-                // Si toutes les dictées ont été vues récemment ou s'il n'en reste qu'une seule disponible,
-                // réinitialiser l'historique pour permettre de les revoir
-                if (availableDictations.length === 0 || (availableDictations.length === 1 && dictations.length > 1)) {
-                    console.log("Réinitialisation de l'historique des dictées récentes");
+                // If all dictations have been recently shown, reset the tracking
+                if (availableDictations.length === 0) {
                     recentDictationsRef.current = [];
                     availableDictations = dictations;
                 }
 
-                // Sélectionner une dictée aléatoire parmi celles disponibles
-                const randomIndex = Math.floor(Math.random() * availableDictations.length);
-                const selectedDictation = availableDictations[randomIndex];
+                // Use a weighted random selection to favor dictations that haven't been shown recently
+                let selectedDictation;
 
-                // Ajouter l'ID de la dictée sélectionnée à l'historique
+                if (availableDictations.length > 1) {
+                    // Use Fisher-Yates shuffle algorithm for better randomization
+                    const shuffledDictations = [...availableDictations];
+                    for (let i = shuffledDictations.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [shuffledDictations[i], shuffledDictations[j]] = [shuffledDictations[j], shuffledDictations[i]];
+                    }
+
+                    selectedDictation = shuffledDictations[0];
+                } else {
+                    selectedDictation = availableDictations[0];
+                }
+
+                // Add this dictation ID to our recent list
                 recentDictationsRef.current.push(selectedDictation.id);
 
-                // Limiter la taille de l'historique
-                if (recentDictationsRef.current.length > maxRecentDictations.current) {
-                    recentDictationsRef.current.shift(); // Supprimer la plus ancienne
+                // Keep only the most recent N dictations in the history
+                if (recentDictationsRef.current.length > maxRecentDictations) {
+                    recentDictationsRef.current.shift(); // Remove the oldest
                 }
 
                 setDictation(selectedDictation);
@@ -145,13 +155,6 @@ export default function Home() {
         }
     }, [step, selectedDifficulty, selectedLetterIndex]);
 
-    useEffect(() => {
-        if (((step === 'full-alphabet' || step === 'dictation') && selectedDifficulty) ||
-            (step === 'partial-alphabet' && selectedLetterIndex !== null)) {
-            fetchDictation(false);
-        }
-    }, [step, selectedDifficulty, selectedLetterIndex, fetchDictation]);
-
     const handleReset = () => {
         setStep('initial');
         setSelectedDifficulty(null);
@@ -160,9 +163,16 @@ export default function Home() {
         setError(null);
         setShowContent(false);
         setShouldAutoPlay(false);
-        // Réinitialiser l'historique des dictées récentes
+        // Clear the recent dictations when resetting
         recentDictationsRef.current = [];
     };
+
+    useEffect(() => {
+        if (((step === 'full-alphabet' || step === 'dictation') && selectedDifficulty) ||
+            (step === 'partial-alphabet' && selectedLetterIndex !== null)) {
+            fetchDictation(false);
+        }
+    }, [step, selectedDifficulty, selectedLetterIndex, fetchDictation]);
 
     const handleRevealContent = () => {
         setShowContent(true);
@@ -220,9 +230,6 @@ export default function Home() {
                 </div>
             )}
 
-            {/* Le reste du code reste inchangé... */}
-
-            {/* Initial step */}
             {step === 'initial' && (
                 <div className="space-y-8">
                     <h1 className="text-3xl font-bold text-center mb-10">Bienvenue sur Imlaa</h1>
@@ -246,7 +253,6 @@ export default function Home() {
                 </div>
             )}
 
-            {/* Full alphabet step */}
             {step === 'full-alphabet' && (
                 <div className="space-y-6">
                     <h2 className="text-2xl font-bold text-center mb-8">Choisissez votre niveau</h2>
@@ -267,7 +273,6 @@ export default function Home() {
                 </div>
             )}
 
-            {/* Letter selection step */}
             {step === 'letter-selection' && (
                 <div className="space-y-6">
                     <h2 className="text-2xl font-bold text-center mb-8">
@@ -294,7 +299,6 @@ export default function Home() {
                 </div>
             )}
 
-            {/* Dictation display */}
             {(step === 'partial-alphabet' || step === 'dictation') && (
                 <div className="mt-8">
                     {loading && (
