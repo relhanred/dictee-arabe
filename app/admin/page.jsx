@@ -65,7 +65,7 @@ export default function AdminPage() {
     return (
         <div className="container mx-auto p-4">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-black">Vue d'ensemble</h1>
+                <h1 className="text-2xl font-bold text-black">{"Vue d'ensemble"}</h1>
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 inline-flex items-center gap-x-4"
