@@ -112,7 +112,7 @@ export default function Home() {
     }, [step, selectedDifficulty, selectedLetterIndex]);
 
     useEffect(() => {
-        if ((step === 'full-alphabet' && selectedDifficulty) ||
+        if (((step === 'full-alphabet' || step === 'dictation') && selectedDifficulty) ||
             (step === 'partial-alphabet' && selectedLetterIndex !== null)) {
             fetchDictation();
         }
