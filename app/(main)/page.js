@@ -57,7 +57,7 @@ export default function Home() {
             const dictationsRef = collection(db, 'dictations');
             let q;
 
-            if (step === 'full-alphabet' && selectedDifficulty) {
+            if ((step === 'full-alphabet' || step === 'dictation') && selectedDifficulty) {
                 q = query(
                     dictationsRef,
                     where('type', '==', 'Texte'),
@@ -127,13 +127,10 @@ export default function Home() {
     };
 
     const getLetterClassName = (letterIndex) => {
-        const baseClasses = "p-4 bg-white shadow-lg rounded-lg transition-all duration-200 text-2xl font-noto";
-
         if (hoveredIndex !== null && letterIndex <= hoveredIndex) {
-            return `${baseClasses} bg-gray-100 shadow-xl scale-105`;
+            return "flex items-center justify-center w-16 h-16 bg-gray-900 text-white rounded-md shadow-sm text-2xl font-noto transition-transform duration-75 hover:scale-105";
         }
-
-        return baseClasses;
+        return "flex items-center justify-center w-16 h-16 bg-white border border-gray-200 text-gray-900 rounded-md text-2xl font-noto transition-colors duration-75 hover:border-gray-400";
     };
 
     return (
@@ -141,7 +138,7 @@ export default function Home() {
             {step !== 'initial' && (
                 <button
                     onClick={handleReset}
-                    className="mb-8 text-gray-600 hover:text-gray-900 flex items-center gap-2"
+                    className="mb-8 text-gray-600 hover:text-gray-900 flex items-center gap-2 transition-colors duration-100"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -160,40 +157,42 @@ export default function Home() {
             )}
 
             {step === 'initial' && (
-                <div className="space-y-4">
-                    <h1 className="text-3xl font-bold text-center mb-8">Bienvenue sur Imlaa</h1>
-                    <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-8">
+                    <h1 className="text-3xl font-bold text-center mb-10">Bienvenue sur Imlaa</h1>
+                    <div className="grid gap-6 md:grid-cols-2 max-w-2xl mx-auto">
                         <button
                             onClick={() => setStep('full-alphabet')}
-                            className="p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow"
+                            className="p-8 bg-white rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-all duration-100 text-center"
                         >
-                            <h2 className="text-xl font-semibold mb-2">Je connais l&apos;alphabet arabe</h2>
-                            <p className="text-gray-600">Choisissez votre niveau de difficulté</p>
+                            <h2 className="text-xl font-semibold mb-3 text-gray-900">Je connais l&apos;alphabet arabe</h2>
+                            <p className="text-gray-500">Choisissez votre niveau de difficulté</p>
                         </button>
+
                         <button
                             onClick={() => setStep('letter-selection')}
-                            className="p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow"
+                            className="p-8 bg-white rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-all duration-100 text-center"
                         >
-                            <h2 className="text-xl font-semibold mb-2">Je suis en apprentissage</h2>
-                            <p className="text-gray-600">Sélectionnez jusqu&apos;où vous en êtes dans l&apos;alphabet</p>
+                            <h2 className="text-xl font-semibold mb-3 text-gray-900">Je suis en apprentissage</h2>
+                            <p className="text-gray-500">Sélectionnez jusqu&apos;où vous en êtes dans l&apos;alphabet</p>
                         </button>
                     </div>
                 </div>
             )}
 
             {step === 'full-alphabet' && (
-                <div className="space-y-4">
+                <div className="space-y-6">
                     <h2 className="text-2xl font-bold text-center mb-8">Choisissez votre niveau</h2>
-                    <div className="grid gap-4 sm:grid-cols-3">
+                    <div className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
                         {DIFFICULTY_LEVELS.map((level) => (
                             <button
                                 key={level.id}
                                 onClick={() => {
                                     setSelectedDifficulty(level.id);
+                                    setStep('dictation');
                                 }}
-                                className="p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow"
+                                className="flex-1 py-5 px-8 bg-white rounded-xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-all duration-100 text-center"
                             >
-                                <h3 className="text-xl font-semibold">{level.label}</h3>
+                                <h3 className="text-xl font-semibold text-gray-900">{level.label}</h3>
                             </button>
                         ))}
                     </div>
@@ -201,56 +200,58 @@ export default function Home() {
             )}
 
             {step === 'letter-selection' && (
-                <div className="space-y-4">
+                <div className="space-y-6">
                     <h2 className="text-2xl font-bold text-center mb-8">
                         À quelle lettre êtes-vous arrivé ?
                     </h2>
-                    <div className="grid grid-cols-4 sm:grid-cols-7 gap-4 text-center" dir="rtl">
-                        {ARABIC_LETTERS.map((letter) => (
-                            <button
-                                key={letter.index}
-                                onClick={() => {
-                                    setSelectedLetterIndex(letter.index);
-                                    setStep('partial-alphabet');
-                                }}
-                                onMouseEnter={() => setHoveredIndex(letter.index)}
-                                onMouseLeave={() => setHoveredIndex(null)}
-                                className={getLetterClassName(letter.index)}
-                            >
-                                {letter.label}
-                            </button>
-                        ))}
+                    <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                        <div className="grid grid-cols-4 sm:grid-cols-7 gap-4 justify-items-center" dir="rtl">
+                            {ARABIC_LETTERS.map((letter) => (
+                                <button
+                                    key={letter.index}
+                                    onClick={() => {
+                                        setSelectedLetterIndex(letter.index);
+                                        setStep('partial-alphabet');
+                                    }}
+                                    onMouseEnter={() => setHoveredIndex(letter.index)}
+                                    onMouseLeave={() => setHoveredIndex(null)}
+                                    className={getLetterClassName(letter.index)}
+                                >
+                                    {letter.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}
 
             {(step === 'partial-alphabet' || step === 'dictation') && (
                 <div className="mt-8">
-                    <h2 className="text-2xl font-bold mb-4">Votre dictée</h2>
+                    <h2 className="text-2xl font-bold mb-6 text-center">Votre dictée</h2>
 
                     {loading && (
-                        <div className="text-center py-4">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                            <p className="mt-2">Chargement de la dictée...</p>
+                        <div className="text-center py-8">
+                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900 mx-auto"></div>
+                            <p className="mt-4 text-gray-600">Chargement de votre dictée...</p>
                         </div>
                     )}
 
                     {error && (
-                        <div className="bg-red-50 text-red-700 p-4 rounded-lg">
+                        <div className="bg-red-50 text-red-700 p-4 rounded-lg max-w-lg mx-auto">
                             {error}
                         </div>
                     )}
 
                     {dictation ? (
-                        <div className="space-y-4">
+                        <div className="max-w-lg mx-auto bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                             {dictation.audioUrl ? (
                                 <AudioPlayer audio={dictation.audioUrl} />
                             ) : (
-                                <p className="text-yellow-600">Aucun audio disponible pour cette dictée</p>
+                                <p className="text-yellow-600 text-center">Aucun audio disponible pour cette dictée</p>
                             )}
                         </div>
                     ) : (
-                        !loading && !error && <p>Aucune dictée disponible</p>
+                        !loading && !error && <p className="text-center text-gray-600">Aucune dictée disponible</p>
                     )}
                 </div>
             )}
