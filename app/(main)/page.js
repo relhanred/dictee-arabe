@@ -190,7 +190,6 @@ export default function Home() {
                                 key={level.id}
                                 onClick={() => {
                                     setSelectedDifficulty(level.id);
-                                    setStep('dictation');
                                 }}
                                 className="p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow"
                             >
