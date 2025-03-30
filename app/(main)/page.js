@@ -2,10 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/app/firebase';
-import dynamic from 'next/dynamic';
-
-// Import dynamique avec désactivation du SSR pour éviter les problèmes de fenêtre
-const AudioPlayer = dynamic(() => import('@/app/components/AudioPlayer'), { ssr: false });
+import AudioPlayer from '@/app/components/AudioPlayer';
 
 const DIFFICULTY_LEVELS = [
     { id: 'Facile', label: 'Facile' },
@@ -54,31 +51,16 @@ export default function Home() {
     const [error, setError] = useState(null);
     const [showContent, setShowContent] = useState(false);
     const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
-    // Utilisation d'un timestamp pour forcer le remontage complet
-    const [audioKey, setAudioKey] = useState(Date.now());
-    const audioPlayerRef = useRef(null);
+    const [dictationKey, setDictationKey] = useState(0);
 
-    // Fonction pour détruire l'audio actuel et forcer un remontage complet
-    const resetAudioPlayer = () => {
-        try {
-            if (audioPlayerRef.current && audioPlayerRef.current.destroyAudio) {
-                audioPlayerRef.current.destroyAudio();
-            }
-        } catch (error) {
-            console.error("Erreur lors de la destruction du lecteur audio:", error);
-        }
-        // Générer une nouvelle clé pour forcer le remontage complet
-        setAudioKey(Date.now());
-    };
+    // Keep track of recently shown dictations to avoid repetition
+    const recentDictationsRef = useRef([]);
+    const maxRecentDictations = 10; // Adjust based on your total dictation count
 
-    // Fonction pour chercher une dictée
     const fetchDictation = useCallback(async (autoPlayAfterFetch = false) => {
         setLoading(true);
         setError(null);
         setShowContent(false);
-
-        // Réinitialiser le lecteur audio avant de charger une nouvelle dictée
-        resetAudioPlayer();
         setShouldAutoPlay(autoPlayAfterFetch);
 
         try {
@@ -124,9 +106,43 @@ export default function Home() {
             });
 
             if (dictations.length > 0) {
-                const randomIndex = Math.floor(Math.random() * dictations.length);
-                const selectedDictation = dictations[randomIndex];
+                // Filter out recently shown dictations if possible
+                let availableDictations = dictations.filter(
+                    dict => !recentDictationsRef.current.includes(dict.id)
+                );
+
+                // If all dictations have been recently shown, reset the tracking
+                if (availableDictations.length === 0) {
+                    recentDictationsRef.current = [];
+                    availableDictations = dictations;
+                }
+
+                // Use a weighted random selection to favor dictations that haven't been shown recently
+                let selectedDictation;
+
+                if (availableDictations.length > 1) {
+                    // Use Fisher-Yates shuffle algorithm for better randomization
+                    const shuffledDictations = [...availableDictations];
+                    for (let i = shuffledDictations.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [shuffledDictations[i], shuffledDictations[j]] = [shuffledDictations[j], shuffledDictations[i]];
+                    }
+
+                    selectedDictation = shuffledDictations[0];
+                } else {
+                    selectedDictation = availableDictations[0];
+                }
+
+                // Add this dictation ID to our recent list
+                recentDictationsRef.current.push(selectedDictation.id);
+
+                // Keep only the most recent N dictations in the history
+                if (recentDictationsRef.current.length > maxRecentDictations) {
+                    recentDictationsRef.current.shift(); // Remove the oldest
+                }
+
                 setDictation(selectedDictation);
+                setDictationKey(prevKey => prevKey + 1);
             } else {
                 setError('Aucune dictée trouvée pour ce critère');
                 setDictation(null);
@@ -139,15 +155,7 @@ export default function Home() {
         }
     }, [step, selectedDifficulty, selectedLetterIndex]);
 
-    useEffect(() => {
-        if (((step === 'full-alphabet' || step === 'dictation') && selectedDifficulty) ||
-            (step === 'partial-alphabet' && selectedLetterIndex !== null)) {
-            fetchDictation(false);
-        }
-    }, [step, selectedDifficulty, selectedLetterIndex, fetchDictation]);
-
     const handleReset = () => {
-        resetAudioPlayer();
         setStep('initial');
         setSelectedDifficulty(null);
         setSelectedLetterIndex(null);
@@ -155,7 +163,16 @@ export default function Home() {
         setError(null);
         setShowContent(false);
         setShouldAutoPlay(false);
+        // Clear the recent dictations when resetting
+        recentDictationsRef.current = [];
     };
+
+    useEffect(() => {
+        if (((step === 'full-alphabet' || step === 'dictation') && selectedDifficulty) ||
+            (step === 'partial-alphabet' && selectedLetterIndex !== null)) {
+            fetchDictation(false);
+        }
+    }, [step, selectedDifficulty, selectedLetterIndex, fetchDictation]);
 
     const handleRevealContent = () => {
         setShowContent(true);
@@ -166,7 +183,6 @@ export default function Home() {
     };
 
     const handleNewDictation = () => {
-        // Récupérer une nouvelle dictée avec lecture automatique
         fetchDictation(true);
     };
 
@@ -303,11 +319,10 @@ export default function Home() {
                             <div className="bg-white sm:p-6 p-2 rounded-xl border border-gray-200 shadow-sm mb-6">
                                 {dictation.audioUrl ? (
                                     <AudioPlayer
-                                        key={audioKey}
+                                        key={dictationKey}
                                         audio={dictation.audioUrl}
                                         options={true}
                                         autoPlay={shouldAutoPlay}
-                                        ref={audioPlayerRef}
                                     />
                                 ) : (
                                     <p className="text-yellow-600 text-center">Aucun audio disponible pour cette dictée</p>

@@ -1,72 +1,35 @@
-import React, {useState, useRef, useEffect, forwardRef, useImperativeHandle} from 'react';
+import React, {useState, useRef, useEffect, useCallback} from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import {PlayIcon} from '@/app/components/icons/PlayIcon';
 import {PauseIcon} from '@/app/components/icons/PauseIcon';
 
-const AudioPlayer = forwardRef(({audio, options = false, autoPlay = false}, ref) => {
+const AudioPlayer = ({audio, options = false, autoPlay = false}) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [isLooping, setIsLooping] = useState(false);
     const [playbackRate, setPlaybackRate] = useState(1);
+    const [audioUrl, setAudioUrl] = useState(audio); // Stocke l'URL audio pour comparaison
     const waveformRef = useRef(null);
     const wavesurferRef = useRef(null);
-    const loopingRef = useRef(false);
-    const abortControllerRef = useRef(null);
-
-    // Fonction de nettoyage sécurisée pour WaveSurfer
-    const safelyDestroyWaveSurfer = () => {
-        try {
-            if (wavesurferRef.current) {
-                // Détacher tous les événements avant de détruire
-                wavesurferRef.current.unAll();
-                wavesurferRef.current.pause();
-                wavesurferRef.current.destroy();
-            }
-        } catch (error) {
-            console.error("Erreur lors de la destruction de WaveSurfer:", error);
-        } finally {
-            wavesurferRef.current = null;
-        }
-    };
-
-    // Exposer des méthodes au composant parent via la ref
-    useImperativeHandle(ref, () => ({
-        stopAudio: () => {
-            if (wavesurferRef.current) {
-                try {
-                    wavesurferRef.current.pause();
-                    wavesurferRef.current.seekTo(0);
-                } catch (error) {
-                    console.error("Erreur lors de l'arrêt de l'audio:", error);
-                }
-                setIsPlaying(false);
-                setCurrentTime(0);
-            }
-        },
-        destroyAudio: safelyDestroyWaveSurfer
-    }));
+    const recorderRef = useRef(null);
+    const loopingRef = useRef(false); // Ref pour accéder à la valeur actuelle dans les callbacks
 
     // Mettre à jour la ref quand l'état change
     useEffect(() => {
         loopingRef.current = isLooping;
     }, [isLooping]);
 
-    // Initialisation ou réinitialisation de WaveSurfer
+    // Initialisation de WaveSurfer
     useEffect(() => {
-        // Nettoyer l'instance précédente et l'AbortController
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort();
-        }
-
-        safelyDestroyWaveSurfer();
-
-        // Créer un nouvel AbortController pour cette instance
-        abortControllerRef.current = new AbortController();
-
         if (!waveformRef.current) return;
 
-        // Créer une nouvelle instance de WaveSurfer
+        // Réinitialiser WaveSurfer si déjà existant
+        if (wavesurferRef.current) {
+            wavesurferRef.current.destroy();
+            wavesurferRef.current = null;
+        }
+
         const wavesurfer = WaveSurfer.create({
             container: waveformRef.current,
             waveColor: '#ced1d0',
@@ -76,105 +39,80 @@ const AudioPlayer = forwardRef(({audio, options = false, autoPlay = false}, ref)
             barGap: 2.25,
             barRadius: 3,
             normalize: true,
-            cursorWidth: 0
+            cursorWidth: 0,
+            url: audio
         });
 
         wavesurferRef.current = wavesurfer;
 
-        // Configuration des événements
-        const onReady = () => {
-            try {
-                if (wavesurferRef.current) {
-                    setDuration(wavesurferRef.current.getDuration());
-                    wavesurferRef.current.setPlaybackRate(playbackRate);
-
-                    if (autoPlay) {
-                        wavesurferRef.current.play();
-                    }
-                }
-            } catch (error) {
-                console.error("Erreur lors de l'événement ready:", error);
+        // Configuration des événements de base
+        wavesurfer.on('ready', () => {
+            setDuration(wavesurfer.getDuration());
+            // Démarrer la lecture automatiquement si autoPlay est activé
+            if (autoPlay) {
+                wavesurfer.play();
             }
-        };
+        });
 
-        const onAudioprocess = () => {
-            try {
-                if (wavesurferRef.current) {
-                    setCurrentTime(wavesurferRef.current.getCurrentTime());
-                }
-            } catch (error) {
-                console.error("Erreur lors de l'événement audioprocess:", error);
-            }
-        };
+        wavesurfer.on('audioprocess', () => {
+            setCurrentTime(wavesurfer.getCurrentTime());
+        });
 
-        const onPlay = () => setIsPlaying(true);
-        const onPause = () => setIsPlaying(false);
+        wavesurfer.on('play', () => {
+            setIsPlaying(true);
+        });
 
-        const onFinish = () => {
-            try {
-                if (!wavesurferRef.current) return;
+        wavesurfer.on('pause', () => {
+            setIsPlaying(false);
+        });
 
-                if (loopingRef.current) {
-                    wavesurferRef.current.seekTo(0);
-                    wavesurferRef.current.play();
-                } else {
-                    setIsPlaying(false);
-                    setCurrentTime(0);
-                    wavesurferRef.current.seekTo(0);
-                }
-            } catch (error) {
-                console.error("Erreur lors de l'événement finish:", error);
-            }
-        };
+        // Gestionnaire pour la fin de la lecture
+        wavesurfer.on('finish', handleFinish);
 
-        // Ajouter les écouteurs d'événements
-        wavesurfer.on('ready', onReady);
-        wavesurfer.on('audioprocess', onAudioprocess);
-        wavesurfer.on('play', onPlay);
-        wavesurfer.on('pause', onPause);
-        wavesurfer.on('finish', onFinish);
+        setAudioUrl(audio);
 
-        // Chargement de l'audio
-        try {
-            wavesurfer.load(audio);
-        } catch (error) {
-            console.error("Erreur lors du chargement de l'audio:", error);
-        }
-
-        // Nettoyage
         return () => {
-            try {
-                if (abortControllerRef.current) {
-                    abortControllerRef.current.abort();
-                }
-
-                // Détacher les écouteurs d'événements explicitement
-                if (wavesurferRef.current) {
-                    wavesurferRef.current.un('ready', onReady);
-                    wavesurferRef.current.un('audioprocess', onAudioprocess);
-                    wavesurferRef.current.un('play', onPlay);
-                    wavesurferRef.current.un('pause', onPause);
-                    wavesurferRef.current.un('finish', onFinish);
-                }
-
-                safelyDestroyWaveSurfer();
-            } catch (error) {
-                console.error("Erreur lors du nettoyage de WaveSurfer:", error);
+            if (wavesurferRef.current) {
+                wavesurferRef.current.destroy();
+                wavesurferRef.current = null;
             }
         };
-    }, [audio, autoPlay, playbackRate]);
+    }, [audio]); // Dépendance sur l'URL audio pour recréer le lecteur quand l'audio change
+
+    // Si l'URL audio change, mettre à jour WaveSurfer
+    useEffect(() => {
+        if (audio !== audioUrl && wavesurferRef.current) {
+            wavesurferRef.current.load(audio);
+            setAudioUrl(audio);
+        }
+    }, [audio, audioUrl]);
+
+    // Gestionnaire de fin explicitement défini comme fonction pour pouvoir y accéder via la ref
+    const handleFinish = useCallback(() => {
+        if (loopingRef.current && wavesurferRef.current) {
+            wavesurferRef.current.seekTo(0);
+            wavesurferRef.current.play();
+        } else if (wavesurferRef.current) {
+            setIsPlaying(false);
+            setCurrentTime(0);
+            wavesurferRef.current.seekTo(0);
+        }
+    }, []);
+
+    // Mise à jour de la vitesse de lecture
+    useEffect(() => {
+        if (wavesurferRef.current) {
+            wavesurferRef.current.setPlaybackRate(playbackRate);
+        }
+    }, [playbackRate]);
 
     const handlePlayPause = () => {
-        try {
-            if (!wavesurferRef.current) return;
+        if (!wavesurferRef.current) return;
 
-            if (isPlaying) {
-                wavesurferRef.current.pause();
-            } else {
-                wavesurferRef.current.play();
-            }
-        } catch (error) {
-            console.error("Erreur lors du play/pause:", error);
+        if (isPlaying) {
+            wavesurferRef.current.pause();
+        } else {
+            wavesurferRef.current.play();
         }
     };
 
@@ -184,13 +122,6 @@ const AudioPlayer = forwardRef(({audio, options = false, autoPlay = false}, ref)
 
     const handlePlaybackRateChange = (newRate) => {
         setPlaybackRate(newRate);
-        try {
-            if (wavesurferRef.current) {
-                wavesurferRef.current.setPlaybackRate(newRate);
-            }
-        } catch (error) {
-            console.error("Erreur lors du changement de vitesse:", error);
-        }
     };
 
     const formatTime = (timeInSeconds) => {
@@ -222,6 +153,7 @@ const AudioPlayer = forwardRef(({audio, options = false, autoPlay = false}, ref)
                 </span>
             </div>
 
+            {/* Options de contrôle - Affichées uniquement si options=true */}
             {options && (
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full mt-3 px-2 space-y-3 sm:space-y-0">
                     <div className="flex items-center">
@@ -267,8 +199,6 @@ const AudioPlayer = forwardRef(({audio, options = false, autoPlay = false}, ref)
             )}
         </div>
     );
-});
-
-AudioPlayer.displayName = 'AudioPlayer';
+};
 
 export default AudioPlayer;
