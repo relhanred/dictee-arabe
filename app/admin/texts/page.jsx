@@ -25,11 +25,9 @@ export default function TextsPage() {
 
     useEffect(() => {
         const dictationsRef = collection(db, 'dictations');
-        // Filtrer pour n'avoir que les dictées de type "Texte"
         const q = query(
             dictationsRef,
-            where("type", "==", "Texte"),
-            orderBy('createdAt', 'desc')
+            where("type", "==", "Texte")
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -37,7 +35,7 @@ export default function TextsPage() {
                 id: doc.id,
                 ...doc.data(),
                 createdAt: doc.data().createdAt?.toDate() || new Date()
-            }));
+            })).sort((a, b) => b.createdAt - a.createdAt);
             setDictations(dictationsData);
             setLoading(false);
         }, (error) => {
