@@ -131,9 +131,9 @@ const AudioPlayer = ({audio}) => {
                 </span>
             </div>
 
-            {/* Options de contrôle */}
-            <div className="flex flex-wrap items-center justify-between w-full mt-3 px-2">
-                <div className="flex items-center space-x-2">
+            {/* Options de contrôle - Version responsive */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full mt-3 px-2 space-y-3 sm:space-y-0">
+                <div className="flex items-center">
                     <button
                         type="button"
                         onClick={toggleLoop}
@@ -155,21 +155,22 @@ const AudioPlayer = ({audio}) => {
                     </button>
                 </div>
 
-                <div className="flex items-center space-x-3">
-                    <span className="text-sm text-gray-600">Vitesse :</span>
-                    {[0.5, 0.75, 1, 1.25, 1.5].map(rate => (
-                        <button
-                            key={rate}
-                            onClick={() => handlePlaybackRateChange(rate)}
-                            className={`w-10 h-8 text-xs font-medium rounded transition ${
-                                playbackRate === rate
-                                    ? 'bg-gray-900 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            {rate === 1 ? 'x1' : rate > 1 ? `x${rate}` : `x${rate}`}
-                        </button>
-                    ))}
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap gap-2">
+                        {[0.5, 0.75, 1, 1.25, 1.5].map(rate => (
+                            <button
+                                key={rate}
+                                onClick={() => handlePlaybackRateChange(rate)}
+                                className={`w-9 h-8 text-xs font-medium rounded transition ${
+                                    playbackRate === rate
+                                        ? 'bg-gray-900 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                {rate === 1 ? 'x1' : rate > 1 ? `x${rate}` : `x${rate}`}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
