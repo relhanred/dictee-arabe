@@ -25,11 +25,9 @@ export default function RootLayout({children}) {
     return (
         <html>
         <body className={`${noto.variable} ${montserrat.variable} antialiased min-h-screen w-screen flex flex-col flex-1 overflow-x-hidden font-montserrat`}>
-        <AppLayout>
-            <AuthProvider className="">
-                {children}
-            </AuthProvider>
-        </AppLayout>
+        <AuthProvider>
+            {children}
+        </AuthProvider>
         </body>
         </html>
     );
