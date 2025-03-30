@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/app/firebase';
 import AudioPlayer from '@/app/components/AudioPlayer';
@@ -51,13 +51,18 @@ export default function Home() {
     const [error, setError] = useState(null);
     const [showContent, setShowContent] = useState(false);
     const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
-    const [dictationKey, setDictationKey] = useState(0); // Utilisé pour forcer le remontage du composant AudioPlayer
+    const [dictationKey, setDictationKey] = useState(0);
+
+    // Référence pour stocker les IDs des dictées récemment affichées
+    const recentDictationsRef = useRef([]);
+    // Nombre maximal de dictées à conserver dans l'historique récent
+    const maxRecentDictations = useRef(5);
 
     const fetchDictation = useCallback(async (autoPlayAfterFetch = false) => {
         setLoading(true);
         setError(null);
-        setShowContent(false); // Reset showContent when fetching a new dictation
-        setShouldAutoPlay(autoPlayAfterFetch); // Définir si la lecture automatique doit être activée
+        setShowContent(false);
+        setShouldAutoPlay(autoPlayAfterFetch);
 
         try {
             const dictationsRef = collection(db, 'dictations');
@@ -89,6 +94,7 @@ export default function Home() {
             if (querySnapshot.empty) {
                 setError('Aucune dictée trouvée pour ce critère');
                 setDictation(null);
+                setLoading(false);
                 return;
             }
 
@@ -102,10 +108,30 @@ export default function Home() {
             });
 
             if (dictations.length > 0) {
-                const randomIndex = Math.floor(Math.random() * dictations.length);
-                const selectedDictation = dictations[randomIndex];
+                // Filtrer les dictées pour exclure celles récemment vues
+                let availableDictations = dictations.filter(d => !recentDictationsRef.current.includes(d.id));
+
+                // Si toutes les dictées ont été vues récemment ou s'il n'en reste qu'une seule disponible,
+                // réinitialiser l'historique pour permettre de les revoir
+                if (availableDictations.length === 0 || (availableDictations.length === 1 && dictations.length > 1)) {
+                    console.log("Réinitialisation de l'historique des dictées récentes");
+                    recentDictationsRef.current = [];
+                    availableDictations = dictations;
+                }
+
+                // Sélectionner une dictée aléatoire parmi celles disponibles
+                const randomIndex = Math.floor(Math.random() * availableDictations.length);
+                const selectedDictation = availableDictations[randomIndex];
+
+                // Ajouter l'ID de la dictée sélectionnée à l'historique
+                recentDictationsRef.current.push(selectedDictation.id);
+
+                // Limiter la taille de l'historique
+                if (recentDictationsRef.current.length > maxRecentDictations.current) {
+                    recentDictationsRef.current.shift(); // Supprimer la plus ancienne
+                }
+
                 setDictation(selectedDictation);
-                // Incrémenter la clé pour forcer le remontage du composant AudioPlayer
                 setDictationKey(prevKey => prevKey + 1);
             } else {
                 setError('Aucune dictée trouvée pour ce critère');
@@ -122,7 +148,7 @@ export default function Home() {
     useEffect(() => {
         if (((step === 'full-alphabet' || step === 'dictation') && selectedDifficulty) ||
             (step === 'partial-alphabet' && selectedLetterIndex !== null)) {
-            fetchDictation(false); // Pas de lecture automatique lors du chargement initial
+            fetchDictation(false);
         }
     }, [step, selectedDifficulty, selectedLetterIndex, fetchDictation]);
 
@@ -134,6 +160,8 @@ export default function Home() {
         setError(null);
         setShowContent(false);
         setShouldAutoPlay(false);
+        // Réinitialiser l'historique des dictées récentes
+        recentDictationsRef.current = [];
     };
 
     const handleRevealContent = () => {
@@ -145,7 +173,7 @@ export default function Home() {
     };
 
     const handleNewDictation = () => {
-        fetchDictation(true); // Activer la lecture automatique après le chargement
+        fetchDictation(true);
     };
 
     const getLetterClassName = (letterIndex) => {
@@ -192,6 +220,9 @@ export default function Home() {
                 </div>
             )}
 
+            {/* Le reste du code reste inchangé... */}
+
+            {/* Initial step */}
             {step === 'initial' && (
                 <div className="space-y-8">
                     <h1 className="text-3xl font-bold text-center mb-10">Bienvenue sur Imlaa</h1>
@@ -215,6 +246,7 @@ export default function Home() {
                 </div>
             )}
 
+            {/* Full alphabet step */}
             {step === 'full-alphabet' && (
                 <div className="space-y-6">
                     <h2 className="text-2xl font-bold text-center mb-8">Choisissez votre niveau</h2>
@@ -235,6 +267,7 @@ export default function Home() {
                 </div>
             )}
 
+            {/* Letter selection step */}
             {step === 'letter-selection' && (
                 <div className="space-y-6">
                     <h2 className="text-2xl font-bold text-center mb-8">
@@ -261,6 +294,7 @@ export default function Home() {
                 </div>
             )}
 
+            {/* Dictation display */}
             {(step === 'partial-alphabet' || step === 'dictation') && (
                 <div className="mt-8">
                     {loading && (
@@ -281,10 +315,10 @@ export default function Home() {
                             <div className="bg-white sm:p-6 p-2 rounded-xl border border-gray-200 shadow-sm mb-6">
                                 {dictation.audioUrl ? (
                                     <AudioPlayer
-                                        key={dictationKey} // Clé unique pour forcer le remontage
+                                        key={dictationKey}
                                         audio={dictation.audioUrl}
                                         options={true}
-                                        autoPlay={shouldAutoPlay} // Active la lecture automatique si shouldAutoPlay est true
+                                        autoPlay={shouldAutoPlay}
                                     />
                                 ) : (
                                     <p className="text-yellow-600 text-center">Aucun audio disponible pour cette dictée</p>
