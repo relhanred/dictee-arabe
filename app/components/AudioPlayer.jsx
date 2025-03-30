@@ -3,12 +3,13 @@ import WaveSurfer from 'wavesurfer.js';
 import {PlayIcon} from '@/app/components/icons/PlayIcon';
 import {PauseIcon} from '@/app/components/icons/PauseIcon';
 
-const AudioPlayer = ({audio, options = false}) => {
+const AudioPlayer = ({audio, options = false, autoPlay = false}) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [isLooping, setIsLooping] = useState(false);
     const [playbackRate, setPlaybackRate] = useState(1);
+    const [audioUrl, setAudioUrl] = useState(audio); // Stocke l'URL audio pour comparaison
     const waveformRef = useRef(null);
     const wavesurferRef = useRef(null);
     const recorderRef = useRef(null);
@@ -21,7 +22,13 @@ const AudioPlayer = ({audio, options = false}) => {
 
     // Initialisation de WaveSurfer
     useEffect(() => {
-        if (!waveformRef.current || wavesurferRef.current) return;
+        if (!waveformRef.current) return;
+
+        // Réinitialiser WaveSurfer si déjà existant
+        if (wavesurferRef.current) {
+            wavesurferRef.current.destroy();
+            wavesurferRef.current = null;
+        }
 
         const wavesurfer = WaveSurfer.create({
             container: waveformRef.current,
@@ -41,6 +48,10 @@ const AudioPlayer = ({audio, options = false}) => {
         // Configuration des événements de base
         wavesurfer.on('ready', () => {
             setDuration(wavesurfer.getDuration());
+            // Démarrer la lecture automatiquement si autoPlay est activé
+            if (autoPlay) {
+                wavesurfer.play();
+            }
         });
 
         wavesurfer.on('audioprocess', () => {
@@ -58,13 +69,23 @@ const AudioPlayer = ({audio, options = false}) => {
         // Gestionnaire pour la fin de la lecture
         wavesurfer.on('finish', handleFinish);
 
+        setAudioUrl(audio);
+
         return () => {
             if (wavesurferRef.current) {
                 wavesurferRef.current.destroy();
                 wavesurferRef.current = null;
             }
         };
-    }, [audio]);
+    }, [audio]); // Dépendance sur l'URL audio pour recréer le lecteur quand l'audio change
+
+    // Si l'URL audio change, mettre à jour WaveSurfer
+    useEffect(() => {
+        if (audio !== audioUrl && wavesurferRef.current) {
+            wavesurferRef.current.load(audio);
+            setAudioUrl(audio);
+        }
+    }, [audio, audioUrl]);
 
     // Gestionnaire de fin explicitement défini comme fonction pour pouvoir y accéder via la ref
     const handleFinish = useCallback(() => {

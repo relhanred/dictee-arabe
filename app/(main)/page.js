@@ -50,11 +50,14 @@ export default function Home() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [showContent, setShowContent] = useState(false);
+    const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
+    const [dictationKey, setDictationKey] = useState(0); // Utilisé pour forcer le remontage du composant AudioPlayer
 
-    const fetchDictation = useCallback(async () => {
+    const fetchDictation = useCallback(async (autoPlayAfterFetch = false) => {
         setLoading(true);
         setError(null);
         setShowContent(false); // Reset showContent when fetching a new dictation
+        setShouldAutoPlay(autoPlayAfterFetch); // Définir si la lecture automatique doit être activée
 
         try {
             const dictationsRef = collection(db, 'dictations');
@@ -102,6 +105,8 @@ export default function Home() {
                 const randomIndex = Math.floor(Math.random() * dictations.length);
                 const selectedDictation = dictations[randomIndex];
                 setDictation(selectedDictation);
+                // Incrémenter la clé pour forcer le remontage du composant AudioPlayer
+                setDictationKey(prevKey => prevKey + 1);
             } else {
                 setError('Aucune dictée trouvée pour ce critère');
                 setDictation(null);
@@ -117,7 +122,7 @@ export default function Home() {
     useEffect(() => {
         if (((step === 'full-alphabet' || step === 'dictation') && selectedDifficulty) ||
             (step === 'partial-alphabet' && selectedLetterIndex !== null)) {
-            fetchDictation();
+            fetchDictation(false); // Pas de lecture automatique lors du chargement initial
         }
     }, [step, selectedDifficulty, selectedLetterIndex, fetchDictation]);
 
@@ -128,6 +133,7 @@ export default function Home() {
         setDictation(null);
         setError(null);
         setShowContent(false);
+        setShouldAutoPlay(false);
     };
 
     const handleRevealContent = () => {
@@ -139,7 +145,7 @@ export default function Home() {
     };
 
     const handleNewDictation = () => {
-        fetchDictation();
+        fetchDictation(true); // Activer la lecture automatique après le chargement
     };
 
     const getLetterClassName = (letterIndex) => {
@@ -274,7 +280,12 @@ export default function Home() {
                         <div className="max-w-3xl mx-auto">
                             <div className="bg-white sm:p-6 p-2 rounded-xl border border-gray-200 shadow-sm mb-6">
                                 {dictation.audioUrl ? (
-                                    <AudioPlayer audio={dictation.audioUrl} options={true} />
+                                    <AudioPlayer
+                                        key={dictationKey} // Clé unique pour forcer le remontage
+                                        audio={dictation.audioUrl}
+                                        options={true}
+                                        autoPlay={shouldAutoPlay} // Active la lecture automatique si shouldAutoPlay est true
+                                    />
                                 ) : (
                                     <p className="text-yellow-600 text-center">Aucun audio disponible pour cette dictée</p>
                                 )}
