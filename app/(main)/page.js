@@ -57,49 +57,55 @@ export default function Home() {
             const dictationsRef = collection(db, 'dictations');
             let q;
 
-            const allDictations = await getDocs(dictationsRef);
-
             if (step === 'full-alphabet' && selectedDifficulty) {
-                console.log('Recherche par difficulté:', selectedDifficulty);
                 q = query(
                     dictationsRef,
+                    where('type', '==', 'Texte'),
                     where('difficulty', '==', selectedDifficulty)
                 );
             } else if (step === 'partial-alphabet' && selectedLetterIndex !== null) {
-                console.log('Recherche de dictées avec letterIndex <=', selectedLetterIndex);
                 q = query(
                     dictationsRef,
+                    where('type', '==', 'Lettre'),
                     where('letterIndex', '<=', selectedLetterIndex)
                 );
             }
 
-            if (q) {
-                const querySnapshot = await getDocs(q);
+            if (!q) {
+                setError('Veuillez sélectionner des critères valides');
+                setDictation(null);
+                setLoading(false);
+                return;
+            }
 
-                if (querySnapshot.empty) {
-                    setError('Aucune dictée trouvée pour ce critère');
-                    setDictation(null);
-                    return;
-                }
+            const querySnapshot = await getDocs(q);
 
-                const dictations = querySnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return {
-                        id: doc.id,
-                        ...data,
-                        createdAt: data.createdAt?.toDate() || new Date()
-                    };
-                });
+            if (querySnapshot.empty) {
+                setError('Aucune dictée trouvée pour ce critère');
+                setDictation(null);
+                return;
+            }
 
-                if (dictations.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * dictations.length);
-                    const selectedDictation = dictations[randomIndex];
-                    setDictation(selectedDictation);
-                }
+            const dictations = querySnapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data,
+                    createdAt: data.createdAt?.toDate() || new Date()
+                };
+            });
+
+            if (dictations.length > 0) {
+                const randomIndex = Math.floor(Math.random() * dictations.length);
+                const selectedDictation = dictations[randomIndex];
+                setDictation(selectedDictation);
+            } else {
+                setError('Aucune dictée trouvée pour ce critère');
+                setDictation(null);
             }
         } catch (error) {
             console.error('Erreur lors de la récupération de la dictée:', error);
-            setError('Erreur lors de la récupération de la dictée');
+            setError('Erreur lors de la récupération de la dictée: ' + error.message);
         } finally {
             setLoading(false);
         }
