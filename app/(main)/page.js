@@ -49,10 +49,13 @@ export default function Home() {
     const [hoveredIndex, setHoveredIndex] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [showContent, setShowContent] = useState(false);
 
     const fetchDictation = useCallback(async () => {
         setLoading(true);
         setError(null);
+        setShowContent(false); // Reset showContent when fetching a new dictation
+
         try {
             const dictationsRef = collection(db, 'dictations');
             let q;
@@ -124,6 +127,15 @@ export default function Home() {
         setSelectedLetterIndex(null);
         setDictation(null);
         setError(null);
+        setShowContent(false);
+    };
+
+    const handleRevealContent = () => {
+        setShowContent(true);
+    };
+
+    const handleNewDictation = () => {
+        fetchDictation();
     };
 
     const getLetterClassName = (letterIndex) => {
@@ -242,16 +254,52 @@ export default function Home() {
                         </div>
                     )}
 
-                    {dictation ? (
-                        <div className="max-w-lg mx-auto bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                            {dictation.audioUrl ? (
-                                <AudioPlayer audio={dictation.audioUrl} />
+                    {dictation && !loading && (
+                        <div className="max-w-lg mx-auto space-y-6">
+                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                                {dictation.audioUrl ? (
+                                    <AudioPlayer audio={dictation.audioUrl} />
+                                ) : (
+                                    <p className="text-yellow-600 text-center">Aucun audio disponible pour cette dictée</p>
+                                )}
+                            </div>
+
+                            {showContent ? (
+                                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm animate-fade-in">
+                                    <div className="text-xl font-noto text-gray-900 leading-relaxed text-right" dir="rtl">
+                                        {dictation.content}
+                                    </div>
+                                </div>
                             ) : (
-                                <p className="text-yellow-600 text-center">Aucun audio disponible pour cette dictée</p>
+                                <div className="flex flex-col space-y-4 text-center">
+                                    <button
+                                        onClick={handleRevealContent}
+                                        className="py-3 px-6 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 mx-auto"
+                                    >
+                                        Afficher la dictée
+                                    </button>
+                                    <p className="text-sm text-gray-500">
+                                        Écoutez l'audio et essayez d'écrire la dictée avant de révéler le contenu
+                                    </p>
+                                </div>
                             )}
+
+                            <div className="flex justify-center pt-4">
+                                <button
+                                    onClick={handleNewDictation}
+                                    className="py-2 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Nouvelle dictée
+                                </button>
+                            </div>
                         </div>
-                    ) : (
-                        !loading && !error && <p className="text-center text-gray-600">Aucune dictée disponible</p>
+                    )}
+
+                    {!dictation && !loading && !error && (
+                        <p className="text-center text-gray-600">Aucune dictée disponible</p>
                     )}
                 </div>
             )}
