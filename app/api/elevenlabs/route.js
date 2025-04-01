@@ -25,8 +25,7 @@ export async function POST(request) {
         const voiceId = "7fbQ7yJuEo56rYjrYaEh";
         const stability = 0.35; // Légèrement expressif, mais naturel
         const similarityBoost = 0.6; // Garde une bonne fidélité à la voix originale
-        const style = 0.1; // Légère expressivité, pas trop exagérée
-        const speed = 0.85; // Un peu ralenti pour une meilleure compréhension
+        const speed = 0.8; // Un peu ralenti pour une meilleure compréhension
         const useSpeakerBoost = false; // Pas nécessaire ici
 
         const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
