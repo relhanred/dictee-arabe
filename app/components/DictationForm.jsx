@@ -123,7 +123,6 @@ const DictationForm = ({onSuccess, initialData = null}) => {
     }, [initialData, setValue]);
 
     useEffect(() => {
-        // Nettoyer l'URL de l'audio généré temporaire lorsque le composant est démonté
         return () => {
             if (generatedAudioUrl && generatedAudioUrl.startsWith('blob:')) {
                 URL.revokeObjectURL(generatedAudioUrl);
@@ -151,18 +150,17 @@ const DictationForm = ({onSuccess, initialData = null}) => {
         setIsGeneratingAudio(true);
 
         try {
-            const response = await fetch('/api/generate-audio', {
+            const response = await fetch('/api/elevenlabs', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    text: content,
+                    text: content
                 }),
             });
 
             if (!response.ok) {
-                // Essayer d'extraire les détails de l'erreur si disponibles
                 let errorDetails = '';
                 try {
                     const errorJson = await response.json();
@@ -182,16 +180,13 @@ const DictationForm = ({onSuccess, initialData = null}) => {
 
             const file = new File([audioBlob], 'generated_audio.mp3', { type: 'audio/mp3' });
 
-            // Créer une URL pour le fichier Blob
             const audioUrl = URL.createObjectURL(audioBlob);
             setGeneratedAudioUrl(audioUrl);
 
-            // Mettre à jour le champ audioFile du formulaire
             setValue('audioFile', file);
 
             showFlash('Audio généré avec succès !', 'success');
         } catch (error) {
-            // Message d'erreur pour l'utilisateur
             showFlash(`Erreur: ${error.message}`, 'error');
         } finally {
             setIsGeneratingAudio(false);
@@ -446,7 +441,7 @@ const DictationForm = ({onSuccess, initialData = null}) => {
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                                     </svg>
-                                    Générer l'audio
+                                    Générer l'audio avec ElevenLabs
                                 </span>
                             )}
                         </button>
