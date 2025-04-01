@@ -13,6 +13,7 @@
     "@react-firebase/auth": "^0.2.10",
     "firebase": "^11.0.1",
     "next": "^15.2.3",
+    "openai": "^4.25.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.53.1",
