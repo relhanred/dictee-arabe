@@ -40,7 +40,6 @@ export async function POST(request) {
                 voice_settings: {
                     stability,
                     similarity_boost: similarityBoost,
-                    style,
                     use_speaker_boost: useSpeakerBoost,
                     speed
                 },
