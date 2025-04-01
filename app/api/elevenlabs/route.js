@@ -12,7 +12,7 @@ export async function POST(request) {
         }
 
         const body = await request.json();
-        const { text } = body;
+        let { text } = body;
 
         if (!text) {
             return NextResponse.json(
@@ -21,12 +21,15 @@ export async function POST(request) {
             );
         }
 
+        // Remplacer les espaces normaux par des espaces insécables pour forcer la prononciation complète
+        const forcedText = text.replace(/ /g, '\u00A0');
+
         // Paramètres pour une dictée plus claire et plus lente
         const voiceId = "7fbQ7yJuEo56rYjrYaEh";
-        const stability = 0.35; // Légèrement expressif, mais naturel
-        const similarityBoost = 0.6; // Garde une bonne fidélité à la voix originale
-        const speed = 0.8; // Un peu ralenti pour une meilleure compréhension
-        const useSpeakerBoost = false; // Pas nécessaire ici
+        const stability = 0.7;  // Augmenté pour une meilleure articulation
+        const similarityBoost = 0.3;  // Réduit pour éviter un lissage excessif
+        const speed = 0.75;  // Ralentir pour une meilleure clarté
+        const useSpeakerBoost = false;
 
         const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
             method: 'POST',
@@ -35,7 +38,7 @@ export async function POST(request) {
                 'xi-api-key': process.env.XI_API_KEY,
             },
             body: JSON.stringify({
-                text,
+                text: forcedText,
                 model_id: "eleven_multilingual_v2",
                 voice_settings: {
                     stability,
