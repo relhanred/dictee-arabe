@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+
 export async function POST(request) {
     try {
-        const XI_API_KEY = process.env.XI_API_KEY;
-
-        if (!XI_API_KEY) {
+        if (!process.env.XI_API_KEY) {
             return NextResponse.json(
-                { error: 'Configuration serveur incorrecte: Clé API ElevenLabs manquante' },
+                { error: 'Configuration serveur incorrecte: Clé API manquante' },
                 { status: 500 }
             );
         }
@@ -21,71 +21,51 @@ export async function POST(request) {
             );
         }
 
-        // D'abord, récupérer la liste des voix disponibles
-        let voice_id = body.voice_id;
-        const model_id = "eleven_multilingual_v2"; // Modèle multilingue
+        // Paramètres fixes pour ElevenLabs
+        const voiceId = "7fbQ7yJuEo56rYjrYaEh";
+        const stability = 0.5;
+        const similarityBoost = 0.75;
 
-        // Si aucune voix n'est spécifiée ou la voix spécifiée n'est pas disponible,
-        // récupérons la première voix disponible
-        if (!voice_id) {
-            const voicesResponse = await fetch('https://api.elevenlabs.io/v1/voices', {
-                headers: {
-                    'Accept': 'application/json',
-                    'xi-api-key': XI_API_KEY
-                }
-            });
-
-            if (voicesResponse.ok) {
-                const voicesData = await voicesResponse.json();
-                if (voicesData.voices && voicesData.voices.length > 0) {
-                    voice_id = voicesData.voices[0].voice_id;
-                }
-            }
-
-            // Si nous n'avons toujours pas de voix, utilisons la voix par défaut d'ElevenLabs (Adam)
-            if (!voice_id) {
-                voice_id = "pNInz6obpgDQGcFmaJgB"; // Adam - une voix prédéfinie d'ElevenLabs
-            }
-        }
-
-        const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`;
-
-        const response = await fetch(url, {
+        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
             method: 'POST',
             headers: {
-                'Accept': 'audio/mpeg',
                 'Content-Type': 'application/json',
-                'xi-api-key': XI_API_KEY
+                'xi-api-key': process.env.XI_API_KEY,
             },
             body: JSON.stringify({
-                text: text,
-                model_id: model_id,
+                text,
+                model_id: "eleven_multilingual_v2",
                 voice_settings: {
-                    stability: 0.5,
-                    similarity_boost: 0.75,
-                    style: 0.5,
-                    use_speaker_boost: true
-                }
-            })
+                    stability,
+                    similarity_boost: similarityBoost,
+                },
+            }),
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`ElevenLabs API error: ${response.status} ${errorText}`);
+            const errorData = await response.json().catch(() => ({}));
+            return NextResponse.json(
+                {
+                    error: 'Erreur lors de la génération de l\'audio',
+                    details: errorData.detail || response.statusText
+                },
+                { status: response.status }
+            );
         }
 
         const audioBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(audioBuffer);
 
-        return new NextResponse(audioBuffer, {
+        return new NextResponse(buffer, {
             headers: {
                 'Content-Type': 'audio/mpeg',
-                'Content-Length': audioBuffer.byteLength.toString(),
+                'Content-Length': buffer.length.toString(),
             },
         });
     } catch (error) {
-        console.error('Erreur génération audio ElevenLabs:', error);
+        console.error('Erreur génération audio:', error);
         return NextResponse.json(
-            { error: `Erreur lors de la génération de l'audio: ${error.message}` },
+            { error: 'Erreur lors de la génération de l\'audio' },
             { status: 500 }
         );
     }
