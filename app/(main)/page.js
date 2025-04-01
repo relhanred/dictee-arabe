@@ -356,7 +356,20 @@ export default function Home() {
 
                             {showContent && (
                                 <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm animate-fade-in">
-                                    <div className="text-xl font-noto text-gray-900 leading-relaxed text-right" dir="rtl">
+                                    <div
+                                        className="
+                                            text-3xl sm:text-4xl md:text-5xl lg:text-6xl
+                                            font-noto
+                                            text-gray-900
+                                            leading-loose
+                                            text-right
+                                            tracking-wide
+                                            break-words
+                                            rtl
+                                            mb-6
+                                        "
+                                        dir="rtl"
+                                    >
                                         {dictation.content}
                                     </div>
                                 </div>

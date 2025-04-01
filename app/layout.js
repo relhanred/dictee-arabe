@@ -1,11 +1,13 @@
 import "./globals.css";
 import {AuthProvider} from "@/contexts/AuthContext";
-import AppLayout from "@/app/layout/AppLayout";
-import {Noto_Naskh_Arabic, Montserrat} from "next/font/google";
+import {
+    Montserrat,
+    Noto_Sans_Arabic
+} from "next/font/google";
 
 
-const noto = Noto_Naskh_Arabic({
-    weight: ['400', '500', '600', '700'],
+const noto = Noto_Sans_Arabic({
+    weight: ['400', '500', '600', '700',],
     subsets: ['arabic'],
     display: 'swap',
     variable: '--font-noto'
