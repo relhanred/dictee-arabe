@@ -21,10 +21,13 @@ export async function POST(request) {
             );
         }
 
-        // Paramètres fixes pour ElevenLabs
+        // Paramètres pour une dictée plus claire et plus lente
         const voiceId = "7fbQ7yJuEo56rYjrYaEh";
-        const stability = 0.5;
-        const similarityBoost = 0.75;
+        const stability = 0.1; // Plus expressif, moins monotone
+        const similarityBoost = 0.3; // Diminue la rigidité
+        const style = 1.0; // Amplifie l’expressivité
+        const speed = 0.7; // Ralentit la dictée
+        const useSpeakerBoost = false; // Pas nécessaire ici
 
         const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
             method: 'POST',
@@ -38,6 +41,9 @@ export async function POST(request) {
                 voice_settings: {
                     stability,
                     similarity_boost: similarityBoost,
+                    style,
+                    use_speaker_boost: useSpeakerBoost,
+                    speed
                 },
             }),
         });
