@@ -65,15 +65,18 @@ const getFormSchema = (hasExistingAudio) => {
     });
 };
 
-const DictationForm = ({onSuccess,initialData = null }) => {
+const DictationForm = ({onSuccess, initialData = null}) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [fileName, setFileName] = useState('');
     const [resetKey, setResetKey] = useState(0);
     const [isEditingAudio, setIsEditingAudio] = useState(false);
+    const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+    const [generatedAudioUrl, setGeneratedAudioUrl] = useState(null);
     const { showFlash } = useFlash();
 
     const handleEditAudio = () => {
         setIsEditingAudio(true);
+        setGeneratedAudioUrl(null);
     };
 
     const handleCancelEditAudio = () => {
@@ -87,6 +90,7 @@ const DictationForm = ({onSuccess,initialData = null }) => {
         watch,
         setValue,
         reset: formReset,
+        getValues,
         formState: {errors},
     } = useForm({
         resolver: zodResolver(getFormSchema(!!initialData?.audioUrl && !isEditingAudio)),
@@ -118,22 +122,90 @@ const DictationForm = ({onSuccess,initialData = null }) => {
         }
     }, [initialData, setValue]);
 
+    useEffect(() => {
+        // Nettoyer l'URL de l'audio généré temporaire lorsque le composant est démonté
+        return () => {
+            if (generatedAudioUrl && generatedAudioUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(generatedAudioUrl);
+            }
+        };
+    }, [generatedAudioUrl]);
+
     const selectedType = watch('type');
 
     const resetForm = useCallback(() => {
         formReset();
         setFileName('');
         setResetKey(prev => prev + 1);
+        setGeneratedAudioUrl(null);
     }, [formReset]);
+
+    const generateAudio = async () => {
+        const content = getValues('content');
+
+        if (!content || content.trim() === '') {
+            showFlash('Veuillez entrer du texte pour générer l\'audio', 'error');
+            return;
+        }
+
+        setIsGeneratingAudio(true);
+
+        try {
+            const response = await fetch('/api/generate-audio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: content,
+                }),
+            });
+
+            if (!response.ok) {
+                // Essayer d'extraire les détails de l'erreur si disponibles
+                let errorDetails = '';
+                try {
+                    const errorJson = await response.json();
+                    errorDetails = errorJson.details || errorJson.error || '';
+                } catch (e) {
+                    // Ignorer les erreurs de parsing
+                }
+
+                throw new Error(`Échec de la génération de l'audio: ${errorDetails}`);
+            }
+
+            const audioBlob = await response.blob();
+
+            if (audioBlob.size === 0) {
+                throw new Error('Le fichier audio généré est vide');
+            }
+
+            const file = new File([audioBlob], 'generated_audio.mp3', { type: 'audio/mp3' });
+
+            // Créer une URL pour le fichier Blob
+            const audioUrl = URL.createObjectURL(audioBlob);
+            setGeneratedAudioUrl(audioUrl);
+
+            // Mettre à jour le champ audioFile du formulaire
+            setValue('audioFile', file);
+
+            showFlash('Audio généré avec succès !', 'success');
+        } catch (error) {
+            // Message d'erreur pour l'utilisateur
+            showFlash(`Erreur: ${error.message}`, 'error');
+        } finally {
+            setIsGeneratingAudio(false);
+        }
+    };
 
     const onSubmit = async (data) => {
         setIsSubmitting(true);
 
         try {
-
             if (!auth.currentUser) {
                 throw new Error('User not authenticated');
             }
+
             let audioUrl = initialData?.audioUrl;
 
             if (data.audioFile) {
@@ -163,7 +235,7 @@ const DictationForm = ({onSuccess,initialData = null }) => {
                 showFlash('Dictée ajoutée avec succès !');
             }
 
-            onSuccess()
+            onSuccess();
         } catch (error) {
             console.error('Error submitting form:', error);
             showFlash('Erreur lors de l\'ajout de la dictée. Veuillez réessayer.', 'error');
@@ -194,25 +266,38 @@ const DictationForm = ({onSuccess,initialData = null }) => {
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    <Controller
-                                        name="audioFile"
-                                        control={control}
-                                        render={({field: {onChange}}) => (
-                                            <div className="flex flex-col">
-                                                <AudioRecorder
-                                                    key={resetKey}
-                                                    onAudioChange={(file) => {
-                                                        onChange(file);
-                                                    }}
-                                                />
-                                                {errors.audioFile && (
-                                                    <p className="mt-1 text-sm text-red-600">
-                                                        {errors.audioFile.message}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        )}
-                                    />
+                                    {generatedAudioUrl ? (
+                                        <div className="space-y-4">
+                                            <AudioPlayer audio={generatedAudioUrl}/>
+                                            <button
+                                                type="button"
+                                                onClick={handleEditAudio}
+                                                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-gray-500"
+                                            >
+                                                Modifier
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <Controller
+                                            name="audioFile"
+                                            control={control}
+                                            render={({field: {onChange}}) => (
+                                                <div className="flex flex-col">
+                                                    <AudioRecorder
+                                                        key={resetKey}
+                                                        onAudioChange={(file) => {
+                                                            onChange(file);
+                                                        }}
+                                                    />
+                                                    {errors.audioFile && (
+                                                        <p className="mt-1 text-sm text-red-600">
+                                                            {errors.audioFile.message}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
+                                        />
+                                    )}
                                     {initialData?.audioUrl && (
                                         <button
                                             type="button"
@@ -337,29 +422,59 @@ const DictationForm = ({onSuccess,initialData = null }) => {
                         )}
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full flex justify-center py-3 px-4 uppercase border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:bg-gray-400"
-                    >
-                        {isSubmitting ? (
-                            <span className="flex items-center">
-                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                                     xmlns="http://www.w3.org/2000/svg"
-                                     fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                            strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor"
-                                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                {initialData ? 'Mise à jour...' : 'Chargement...'}
-                            </span>
-                        ) : (
-                            <span className="flex items-center">
-                                {initialData ? 'Mettre à jour' : 'Ajouter'}
-                            </span>
-                        )}
-                    </button>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <button
+                            type="button"
+                            onClick={generateAudio}
+                            disabled={isGeneratingAudio}
+                            className="flex-1 justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 inline-flex items-center"
+                        >
+                            {isGeneratingAudio ? (
+                                <span className="flex items-center">
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor"
+                                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Génération en cours...
+                                </span>
+                            ) : (
+                                <span className="flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                                    </svg>
+                                    Générer l'audio
+                                </span>
+                            )}
+                        </button>
+
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="flex-1 justify-center py-3 px-4 uppercase border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:bg-gray-400 inline-flex items-center"
+                        >
+                            {isSubmitting ? (
+                                <span className="flex items-center">
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor"
+                                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    {initialData ? 'Mise à jour...' : 'Chargement...'}
+                                </span>
+                            ) : (
+                                <span className="flex items-center">
+                                    {initialData ? 'Mettre à jour' : 'Ajouter'}
+                                </span>
+                            )}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
