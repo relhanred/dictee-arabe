@@ -231,32 +231,32 @@ export default function Home() {
             )}
 
             {step === 'initial' && (
-                <div className="space-y-8">
-                    <h1 className="text-3xl font-bold text-center mb-10">Bienvenue sur Imlaa</h1>
-                    <div className="grid gap-6 md:grid-cols-2 max-w-2xl mx-auto">
+                <div className="space-y-4 sm:space-y-8">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-10 text-gray-900">Bienvenue sur Imlaa</h1>
+                    <div className="grid gap-4 sm:gap-6 md:grid-cols-2 max-w-2xl mx-auto">
                         <button
                             onClick={() => setStep('full-alphabet')}
-                            className="p-8 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 text-center"
+                            className="p-4 sm:p-8 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 text-center"
                         >
-                            <h2 className="text-xl font-semibold mb-3 text-gray-900">Je connais l&apos;alphabet arabe</h2>
-                            <p className="text-gray-500">Choisissez votre niveau de difficulté</p>
+                            <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-gray-900">Je connais l&apos;alphabet arabe</h2>
+                            <p className="text-gray-700 text-sm sm:text-base">Choisissez votre niveau de difficulté</p>
                         </button>
 
                         <button
                             onClick={() => setStep('letter-selection')}
-                            className="p-8 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 text-center"
+                            className="p-4 sm:p-8 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 text-center"
                         >
-                            <h2 className="text-xl font-semibold mb-3 text-gray-900">Je suis en apprentissage</h2>
-                            <p className="text-gray-500">Sélectionnez jusqu&apos;où vous en êtes dans l&apos;alphabet</p>
+                            <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-gray-900">Je suis en apprentissage</h2>
+                            <p className="text-gray-700 text-sm sm:text-base">Sélectionnez jusqu&apos;où vous en êtes dans l&apos;alphabet</p>
                         </button>
                     </div>
                 </div>
             )}
 
             {step === 'full-alphabet' && (
-                <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-center mb-8">Choisissez votre niveau</h2>
-                    <div className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+                <div className="space-y-4 sm:space-y-6">
+                    <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-8 text-gray-900">Choisissez votre niveau</h2>
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 max-w-xl mx-auto">
                         {DIFFICULTY_LEVELS.map((level) => (
                             <button
                                 key={level.id}
@@ -264,9 +264,9 @@ export default function Home() {
                                     setSelectedDifficulty(level.id);
                                     setStep('dictation');
                                 }}
-                                className="flex-1 py-5 px-8 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 text-center"
+                                className="flex-1 py-3 sm:py-5 px-4 sm:px-8 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 text-center"
                             >
-                                <h3 className="text-xl font-semibold text-gray-900">{level.label}</h3>
+                                <h3 className="text-lg sm:text-xl font-semibold text-gray-900">{level.label}</h3>
                             </button>
                         ))}
                     </div>
@@ -274,12 +274,12 @@ export default function Home() {
             )}
 
             {step === 'letter-selection' && (
-                <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-center mb-8">
+                <div className="space-y-4 sm:space-y-6">
+                    <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-8 text-gray-900">
                         À quelle lettre êtes-vous arrivé ?
                     </h2>
-                    <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
-                        <div className="grid grid-cols-4 sm:grid-cols-7 gap-4 justify-items-center" dir="rtl">
+                    <div className="bg-white p-4 sm:p-8 rounded-xl border border-gray-200 shadow-sm">
+                        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 sm:gap-4 justify-items-center" dir="rtl">
                             {ARABIC_LETTERS.map((letter) => (
                                 <button
                                     key={letter.index}
