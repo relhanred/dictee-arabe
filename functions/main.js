@@ -8,4 +8,5 @@ setGlobalOptions({ region: "your-region" })
 // CORS
 export const cors = [
     "http://localhost:3000",
+    "https://imlaa.fr"
 ]
